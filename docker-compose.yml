@@ -1,0 +1,97 @@
+version: "3.9"
+
+services:
+  shelly_mysql:
+    image: mysql:8.0
+    container_name: shelly_mysql_local
+    ports:
+      - "13306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: local
+      MYSQL_DATABASE: dati
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    volumes:
+      - shelly_mysql_data:/var/lib/mysql
+    restart: always
+    networks:
+      - shelly_monitoring
+
+  shelly_logger:
+    build: ./logger
+    container_name: shelly_logger_local
+    volumes:
+      - ./logger:/app
+    working_dir: /app
+    command: /app/entrypoint.sh
+    environment:
+      - SHELLY_IP=192.168.11.208  # IP del dispositivo Shelly locale
+      - MYSQL_HOST=shelly_mysql  # Cambia da shelly_mysql a 127.0.0.1 per host mode
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
+      - MYSQL_DATABASE=dati
+    restart: always
+    depends_on:
+      - shelly_mysql
+    ports:
+      - "15000:5000"
+    networks:
+      - shelly_monitoring
+    extra_hosts:
+      - "shelly_device:192.168.11.208"  
+
+  shelly_grafana:
+    image: grafana/grafana
+    container_name: shelly_grafana_local
+    ports:
+      - "13000:3000"
+    volumes:
+      - shelly_grafana_data:/var/lib/grafana
+    restart: always
+    networks:
+      - shelly_monitoring
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: shelly_phpmyadmin_local
+    ports:
+      - "18080:80"  # Verifica che la porta 8080 non sia già in uso
+    environment:
+      - PMA_HOST=shelly_mysql
+      - PMA_USER=myuser
+      - PMA_PASSWORD=mypassword
+    restart: always
+    depends_on:
+      - shelly_mysql
+    networks:
+      - shelly_monitoring
+
+
+  flask:
+    build: ./flask
+    container_name: shelly_flask
+    ports:
+      - "15001:5000"  # Espone il servizio sulla porta 5000
+    command: python app.py  # Comando di avvio specificato qui
+    volumes:
+      - ./flask:/app  # Monta la directory locale nel contenitore
+    environment:
+      - CLIENT_SECRET=ta-secret.EIOXZ12%eEACq43R
+      - MYSQL_HOST=mysql  # Nome del servizio MySQL
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=local  # Cambia con una password sicura
+      - MYSQL_DATABASE=dati  # Nome del database
+    depends_on:
+      - shelly_mysql
+    networks:
+      - shelly_monitoring
+    restart: always
+       
+  
+networks:
+  shelly_monitoring:
+    name: shelly_monitoring  # Assegna un nome fisso alla rete
+
+volumes:
+  shelly_mysql_data:
+  shelly_grafana_data:
