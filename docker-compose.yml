@@ -72,20 +72,43 @@ services:
     container_name: shelly_flask
     ports:
       - "15001:5000"  # Espone il servizio sulla porta 5000
-    command: python app.py  # Comando di avvio specificato qui
     volumes:
       - ./flask:/app  # Monta la directory locale nel contenitore
+
     environment:
       - CLIENT_SECRET=ta-secret.EIOXZ12%eEACq43R
-      - MYSQL_HOST=mysql  # Nome del servizio MySQL
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=local  # Cambia con una password sicura
-      - MYSQL_DATABASE=dati  # Nome del database
+      - FLASK_APP=app.py
+      - MYSQL_HOST=shelly_mysql  # Cambia da shelly_mysql a 127.0.0.1 per host mode
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
+      - MYSQL_DATABASE=dati
     depends_on:
       - shelly_mysql
     networks:
       - shelly_monitoring
+    extra_hosts:
+      - host.docker.internal:192.168.11.176   
     restart: always
+    command: flask run --host=0.0.0.0 --port=5000 --reload
+
+
+  tesla_http_proxy:
+    image: tesla/vehicle-command:latest
+    ports:
+      - "4443:4443"
+    environment:
+      - TESLA_HTTP_PROXY_TLS_CERT=/config/cert.pem
+      - TESLA_HTTP_PROXY_TLS_KEY=/config/key.pem
+      - TESLA_HTTP_PROXY_HOST=0.0.0.0
+      - TESLA_HTTP_PROXY_PORT=4443
+      - TESLA_HTTP_PROXY_TIMEOUT=10s
+      - TESLA_KEY_FILE=/config/private-key.pem
+      - TESLA_VERBOSE=true
+    volumes:
+      - ./tesla-proxy-config:/config
+    restart: always
+    networks:
+      - shelly_monitoring  
        
   
 networks:

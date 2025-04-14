@@ -1,1 +1,652 @@
-2025-04-02 06:30:22,886 - INFO - Logger configurato con rotazione giornaliera.
+
+2025-04-14 20:34:45,339 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:34:47,452 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:34:47,452 - INFO - 🕒 Timestamp: 2025-04-14 20:34:34
+2025-04-14 20:34:47,452 - INFO - ⚡ Produzione fotovoltaico: -7.89 W
+2025-04-14 20:34:47,452 - INFO - 🏠 Assorbimento casa: 884.73 W
+2025-04-14 20:34:47,452 - INFO - 🔄 Differenza produzione - assorbimento: -892.61 W
+2025-04-14 20:34:47,500 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 20:34:47,500 - INFO - 🔌 Energia sufficiente (2000.00 W), invio comando 'charge_start'
+2025-04-14 20:34:47,556 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php charge_start
+2025-04-14 20:34:48,743 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:34:48,744 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:34:48,744 - INFO - 📤 Output: {
+2025-04-14 20:34:48,744 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:34:48,744 - INFO - 📤 Output:     "command_sent": "charge_start",
+2025-04-14 20:34:48,744 - INFO - 📤 Output:     "value": null,
+2025-04-14 20:34:48,744 - INFO - 📤 Output:     "output": [
+2025-04-14 20:34:48,744 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 20:34:48,744 - INFO - 📤 Output:     ],
+2025-04-14 20:34:48,744 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:34:48,744 - INFO - 📤 Output: }
+2025-04-14 20:34:48,745 - INFO - ✅ Comando: charge_start, Stato: success, Codice: 0
+2025-04-14 20:34:48,745 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 20:34:48,745 - DEBUG - 👉 Controllo se 2000.00 >= 2860 (per 13 A)
+2025-04-14 20:34:48,746 - DEBUG - 👉 Controllo se 2000.00 >= 2640 (per 12 A)
+2025-04-14 20:34:48,746 - DEBUG - 👉 Controllo se 2000.00 >= 2420 (per 11 A)
+2025-04-14 20:34:48,746 - DEBUG - 👉 Controllo se 2000.00 >= 2200 (per 10 A)
+2025-04-14 20:34:48,746 - DEBUG - 👉 Controllo se 2000.00 >= 1980 (per 9 A)
+2025-04-14 20:34:48,746 - INFO - ⚡ Energia abbondante (2000.00 W), invio 'set_charging_amps' con value=9
+2025-04-14 20:34:48,901 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php set_charging_amps 9
+2025-04-14 20:34:49,651 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:34:49,651 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:34:49,651 - INFO - 📤 Output: {
+2025-04-14 20:34:49,651 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:34:49,651 - INFO - 📤 Output:     "command_sent": "set_charging_amps",
+2025-04-14 20:34:49,651 - INFO - 📤 Output:     "value": "9",
+2025-04-14 20:34:49,652 - INFO - 📤 Output:     "output": [
+2025-04-14 20:34:49,652 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 20:34:49,652 - INFO - 📤 Output:     ],
+2025-04-14 20:34:49,652 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:34:49,652 - INFO - 📤 Output: }
+2025-04-14 20:34:49,652 - INFO - ✅ Comando: set_charging_amps, Stato: success, Codice: 0
+2025-04-14 20:34:49,652 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 20:34:49,704 - INFO - 💾 Stato ricarica registrato: 9 A
+2025-04-14 20:34:49,712 - INFO - 💾 Stato Tesla aggiornato nel DB (9 A).
+2025-04-14 20:35:12,366 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:35:14,658 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:35:14,658 - INFO - 🕒 Timestamp: 2025-04-14 20:34:34
+2025-04-14 20:35:14,658 - INFO - ⚡ Produzione fotovoltaico: -7.89 W
+2025-04-14 20:35:14,658 - INFO - 🏠 Assorbimento casa: 884.73 W
+2025-04-14 20:35:14,659 - INFO - 🔄 Differenza produzione - assorbimento: -892.61 W
+2025-04-14 20:35:14,712 - INFO - 🔌 Stato attuale Tesla: 9 A
+2025-04-14 20:35:14,712 - INFO - ⚡ Tesla sta già caricando (9 A), salto 'charge_start'
+2025-04-14 20:35:14,712 - DEBUG - 👉 Controllo se 2000.00 >= 2860 (per 13 A)
+2025-04-14 20:35:14,712 - DEBUG - 👉 Controllo se 2000.00 >= 2640 (per 12 A)
+2025-04-14 20:35:14,713 - DEBUG - 👉 Controllo se 2000.00 >= 2420 (per 11 A)
+2025-04-14 20:35:14,713 - DEBUG - 👉 Controllo se 2000.00 >= 2200 (per 10 A)
+2025-04-14 20:35:14,713 - DEBUG - 👉 Controllo se 2000.00 >= 1980 (per 9 A)
+2025-04-14 20:35:14,713 - INFO - ⚡ Energia abbondante (2000.00 W), invio 'set_charging_amps' con value=9
+2025-04-14 20:35:14,797 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php set_charging_amps 9
+2025-04-14 20:35:17,522 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:35:17,522 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:35:17,522 - INFO - 📤 Output: {
+2025-04-14 20:35:17,522 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:35:17,522 - INFO - 📤 Output:     "command_sent": "set_charging_amps",
+2025-04-14 20:35:17,522 - INFO - 📤 Output:     "value": "9",
+2025-04-14 20:35:17,522 - INFO - 📤 Output:     "output": [
+2025-04-14 20:35:17,522 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 20:35:17,522 - INFO - 📤 Output:     ],
+2025-04-14 20:35:17,522 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:35:17,522 - INFO - 📤 Output: }
+2025-04-14 20:35:17,522 - INFO - ✅ Comando: set_charging_amps, Stato: success, Codice: 0
+2025-04-14 20:35:17,523 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 20:35:17,577 - INFO - 💾 Stato ricarica registrato: 9 A
+2025-04-14 20:35:17,585 - INFO - 💾 Stato Tesla aggiornato nel DB (9 A).
+2025-04-14 20:35:54,941 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:35:57,301 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:35:59,517 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:35:59,517 - INFO - 🕒 Timestamp: 2025-04-14 20:35:34
+2025-04-14 20:35:59,517 - INFO - ⚡ Produzione fotovoltaico: -7.88 W
+2025-04-14 20:35:59,517 - INFO - 🏠 Assorbimento casa: 883.77 W
+2025-04-14 20:35:59,518 - INFO - 🔄 Differenza produzione - assorbimento: -891.65 W
+2025-04-14 20:35:59,585 - INFO - 🔌 Stato attuale Tesla: 9 A
+2025-04-14 20:35:59,585 - INFO - ⚡ Tesla sta già caricando (9 A), salto 'charge_start'
+2025-04-14 20:35:59,586 - DEBUG - 👉 Controllo se 3000.00 >= 2860 (per 13 A)
+2025-04-14 20:35:59,586 - INFO - ⚡ Energia abbondante (3000.00 W), invio 'set_charging_amps' con value=13
+2025-04-14 20:35:59,651 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php set_charging_amps 13
+2025-04-14 20:36:01,150 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:36:01,150 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:36:01,150 - INFO - 📤 Output: {
+2025-04-14 20:36:01,150 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:36:01,150 - INFO - 📤 Output:     "command_sent": "set_charging_amps",
+2025-04-14 20:36:01,151 - INFO - 📤 Output:     "value": "13",
+2025-04-14 20:36:01,151 - INFO - 📤 Output:     "output": [
+2025-04-14 20:36:01,151 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 20:36:01,151 - INFO - 📤 Output:     ],
+2025-04-14 20:36:01,151 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:36:01,151 - INFO - 📤 Output: }
+2025-04-14 20:36:01,151 - INFO - ✅ Comando: set_charging_amps, Stato: success, Codice: 0
+2025-04-14 20:36:01,151 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 20:36:01,219 - INFO - 💾 Stato ricarica registrato: 13 A
+2025-04-14 20:36:01,242 - INFO - 💾 Stato Tesla aggiornato nel DB (13 A).
+2025-04-14 20:36:31,935 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:36:35,117 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:36:37,224 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:36:37,224 - INFO - 🕒 Timestamp: 2025-04-14 20:36:35
+2025-04-14 20:36:37,225 - INFO - ⚡ Produzione fotovoltaico: -7.91 W
+2025-04-14 20:36:37,225 - INFO - 🏠 Assorbimento casa: 875.72 W
+2025-04-14 20:36:37,225 - INFO - 🔄 Differenza produzione - assorbimento: -883.64 W
+2025-04-14 20:36:37,280 - INFO - 🔌 Stato attuale Tesla: 13 A
+2025-04-14 20:36:37,280 - INFO - ⚡ Tesla sta già caricando (13 A), salto 'charge_start'
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 2860 (per 13 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 2640 (per 12 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 2420 (per 11 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 2200 (per 10 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 1980 (per 9 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 1760 (per 8 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 1540 (per 7 A)
+2025-04-14 20:36:37,281 - DEBUG - 👉 Controllo se 1300.00 >= 1320 (per 6 A)
+2025-04-14 20:36:51,812 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:37:37,778 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:38:22,439 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:38:24,623 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:38:24,623 - INFO - 🕒 Timestamp: 2025-04-14 20:37:35
+2025-04-14 20:38:24,623 - INFO - ⚡ Produzione fotovoltaico: -7.90 W
+2025-04-14 20:38:24,623 - INFO - 🏠 Assorbimento casa: 877.85 W
+2025-04-14 20:38:24,623 - INFO - 🔄 Differenza produzione - assorbimento: -885.75 W
+2025-04-14 20:38:24,667 - INFO - 🔌 Stato attuale Tesla: 13 A
+2025-04-14 20:38:24,667 - INFO - ⚡ Tesla sta già caricando (13 A), salto 'charge_start'
+2025-04-14 20:38:24,667 - DEBUG - 👉 Controllo se 1300.00 >= 2860 (per 13 A)
+2025-04-14 20:38:24,668 - DEBUG - 👉 Controllo se 1300.00 >= 2640 (per 12 A)
+2025-04-14 20:38:24,668 - DEBUG - 👉 Controllo se 1300.00 >= 2420 (per 11 A)
+2025-04-14 20:38:24,668 - DEBUG - 👉 Controllo se 1300.00 >= 2200 (per 10 A)
+2025-04-14 20:38:24,668 - DEBUG - 👉 Controllo se 1300.00 >= 1980 (per 9 A)
+2025-04-14 20:38:24,668 - DEBUG - 👉 Controllo se 1300.00 >= 1760 (per 8 A)
+2025-04-14 20:38:24,668 - DEBUG - 👉 Controllo se 1300.00 >= 1540 (per 7 A)
+2025-04-14 20:38:24,669 - DEBUG - 👉 Controllo se 1300.00 >= 1320 (per 6 A)
+2025-04-14 20:39:13,936 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:40:51,201 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:40:53,343 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:40:55,304 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:40:55,304 - INFO - 🕒 Timestamp: 2025-04-14 20:40:35
+2025-04-14 20:40:55,304 - INFO - ⚡ Produzione fotovoltaico: -8.00 W
+2025-04-14 20:40:55,305 - INFO - 🏠 Assorbimento casa: 874.17 W
+2025-04-14 20:40:55,305 - INFO - 🔄 Differenza produzione - assorbimento: -882.17 W
+2025-04-14 20:40:55,377 - INFO - 🔌 Stato attuale Tesla: 13 A
+2025-04-14 20:40:55,377 - INFO - ⚡ Tesla sta già caricando (13 A), salto 'charge_start'
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 2860 (per 13 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 2640 (per 12 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 2420 (per 11 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 2200 (per 10 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 1980 (per 9 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 1760 (per 8 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 1540 (per 7 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 1320 (per 6 A)
+2025-04-14 20:40:55,377 - DEBUG - 👉 Controllo se 1300.00 >= 1100 (per 5 A)
+2025-04-14 20:40:55,377 - INFO - ⚡ Energia abbondante (1300.00 W), invio 'set_charging_amps' con value=5
+2025-04-14 20:40:55,479 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php set_charging_amps 5
+2025-04-14 20:40:56,423 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:40:56,423 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:40:56,423 - INFO - 📤 Output: {
+2025-04-14 20:40:56,423 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:40:56,423 - INFO - 📤 Output:     "command_sent": "set_charging_amps",
+2025-04-14 20:40:56,423 - INFO - 📤 Output:     "value": "5",
+2025-04-14 20:40:56,423 - INFO - 📤 Output:     "output": [
+2025-04-14 20:40:56,423 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 20:40:56,424 - INFO - 📤 Output:     ],
+2025-04-14 20:40:56,424 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:40:56,424 - INFO - 📤 Output: }
+2025-04-14 20:40:56,424 - INFO - ✅ Comando: set_charging_amps, Stato: success, Codice: 0
+2025-04-14 20:40:56,424 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 20:40:56,505 - INFO - 💾 Stato ricarica registrato: 5 A
+2025-04-14 20:40:56,516 - INFO - 💾 Stato Tesla aggiornato nel DB (5 A).
+2025-04-14 20:42:41,434 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:42:44,319 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:42:46,532 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:42:46,532 - INFO - 🕒 Timestamp: 2025-04-14 20:42:35
+2025-04-14 20:42:46,532 - INFO - ⚡ Produzione fotovoltaico: -8.14 W
+2025-04-14 20:42:46,532 - INFO - 🏠 Assorbimento casa: 867.81 W
+2025-04-14 20:42:46,532 - INFO - 🔄 Differenza produzione - assorbimento: -875.95 W
+2025-04-14 20:42:46,578 - INFO - 🔌 Stato attuale Tesla: 5 A
+2025-04-14 20:42:46,579 - INFO - ⚠️ Energia insufficiente (1099.00 W), invio comando 'charge_stop'
+2025-04-14 20:42:46,678 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php charge_stop
+2025-04-14 20:42:47,897 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:42:47,898 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:42:47,898 - INFO - 📤 Output: {
+2025-04-14 20:42:47,898 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:42:47,898 - INFO - 📤 Output:     "command_sent": "charge_stop",
+2025-04-14 20:42:47,898 - INFO - 📤 Output:     "value": null,
+2025-04-14 20:42:47,898 - INFO - 📤 Output:     "output": [
+2025-04-14 20:42:47,898 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 20:42:47,898 - INFO - 📤 Output:     ],
+2025-04-14 20:42:47,898 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:42:47,899 - INFO - 📤 Output: }
+2025-04-14 20:42:47,899 - INFO - ✅ Comando: charge_stop, Stato: success, Codice: 0
+2025-04-14 20:42:47,899 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 20:42:48,007 - INFO - 💾 Stato ricarica registrato: 0 A
+2025-04-14 20:42:48,029 - INFO - 💾 Stato Tesla aggiornato nel DB (0 A).
+2025-04-14 20:44:00,569 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:46:33,916 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:47:16,934 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:47:48,011 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:48:13,179 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:48:15,263 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:48:15,265 - INFO - 🕒 Timestamp: 2025-04-14 20:47:36
+2025-04-14 20:48:15,266 - INFO - ⚡ Produzione fotovoltaico: -8.05 W
+2025-04-14 20:48:15,266 - INFO - 🏠 Assorbimento casa: 786.68 W
+2025-04-14 20:48:15,266 - INFO - 🔄 Differenza produzione - assorbimento: -794.73 W
+2025-04-14 20:48:15,317 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 20:48:15,317 - INFO - ⚠️ Energia insufficiente (-794.73 W), invio comando 'charge_stop'
+2025-04-14 20:48:15,379 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php charge_stop
+2025-04-14 20:48:16,221 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:48:16,221 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:48:16,221 - INFO - 📤 Output: {
+2025-04-14 20:48:16,221 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:48:16,221 - INFO - 📤 Output:     "command_sent": "charge_stop",
+2025-04-14 20:48:16,221 - INFO - 📤 Output:     "value": null,
+2025-04-14 20:48:16,221 - INFO - 📤 Output:     "output": [
+2025-04-14 20:48:16,222 - INFO - 📤 Output:         "{\"response\":{\"result\":false,\"string\":\"car could not execute command: not_charging\"},\"error\":\"\",\"error_description\":\"\"}"
+2025-04-14 20:48:16,222 - INFO - 📤 Output:     ],
+2025-04-14 20:48:16,222 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:48:16,223 - INFO - 📤 Output: }
+2025-04-14 20:48:16,223 - INFO - ✅ Comando: charge_stop, Stato: success, Codice: 0
+2025-04-14 20:48:16,223 - INFO - 📦 Risposta Tesla: {'result': False, 'string': 'car could not execute command: not_charging'}
+2025-04-14 20:48:16,343 - INFO - 💾 Stato ricarica registrato: 0 A
+2025-04-14 20:48:16,352 - INFO - 💾 Stato Tesla aggiornato nel DB (0 A).
+2025-04-14 20:53:19,161 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:53:26,954 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:53:29,204 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:53:29,205 - INFO - 🕒 Timestamp: 2025-04-14 20:52:37
+2025-04-14 20:53:29,205 - INFO - ⚡ Produzione fotovoltaico: -7.88 W
+2025-04-14 20:53:29,205 - INFO - 🏠 Assorbimento casa: 759.04 W
+2025-04-14 20:53:29,205 - INFO - 🔄 Differenza produzione - assorbimento: -766.92 W
+2025-04-14 20:53:29,272 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 20:53:29,272 - INFO - ⚠️ Energia insufficiente (-766.92 W), invio comando 'charge_stop'
+2025-04-14 20:53:29,334 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php charge_stop
+2025-04-14 20:53:30,381 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 20:53:30,382 - INFO - 📤 Output: SAPI: cli
+2025-04-14 20:53:30,382 - INFO - 📤 Output: {
+2025-04-14 20:53:30,382 - INFO - 📤 Output:     "status": "success",
+2025-04-14 20:53:30,382 - INFO - 📤 Output:     "command_sent": "charge_stop",
+2025-04-14 20:53:30,383 - INFO - 📤 Output:     "value": null,
+2025-04-14 20:53:30,383 - INFO - 📤 Output:     "output": [
+2025-04-14 20:53:30,383 - INFO - 📤 Output:         "{\"response\":{\"result\":false,\"string\":\"car could not execute command: not_charging\"},\"error\":\"\",\"error_description\":\"\"}"
+2025-04-14 20:53:30,383 - INFO - 📤 Output:     ],
+2025-04-14 20:53:30,384 - INFO - 📤 Output:     "code": 0
+2025-04-14 20:53:30,384 - INFO - 📤 Output: }
+2025-04-14 20:53:30,384 - INFO - ✅ Comando: charge_stop, Stato: success, Codice: 0
+2025-04-14 20:53:30,384 - INFO - 📦 Risposta Tesla: {'result': False, 'string': 'car could not execute command: not_charging'}
+2025-04-14 20:53:30,517 - INFO - 💾 Stato ricarica registrato: 0 A
+2025-04-14 20:53:30,526 - INFO - 💾 Stato Tesla aggiornato nel DB (0 A).
+2025-04-14 20:58:15,263 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:58:26,174 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:58:28,231 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:58:28,231 - INFO - 🕒 Timestamp: 2025-04-14 20:57:37
+2025-04-14 20:58:28,231 - INFO - ⚡ Produzione fotovoltaico: -7.90 W
+2025-04-14 20:58:28,231 - INFO - 🏠 Assorbimento casa: 771.30 W
+2025-04-14 20:58:28,231 - INFO - 🔄 Differenza produzione - assorbimento: -779.20 W
+2025-04-14 20:58:28,280 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 20:58:28,280 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 20:58:38,872 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 20:58:41,028 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 20:58:41,028 - INFO - 🕒 Timestamp: 2025-04-14 20:58:37
+2025-04-14 20:58:41,028 - INFO - ⚡ Produzione fotovoltaico: -7.87 W
+2025-04-14 20:58:41,029 - INFO - 🏠 Assorbimento casa: 761.65 W
+2025-04-14 20:58:41,029 - INFO - 🔄 Differenza produzione - assorbimento: -769.52 W
+2025-04-14 20:58:41,115 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 20:58:41,115 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:00:02,511 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:00:04,473 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:00:04,474 - INFO - 🕒 Timestamp: 2025-04-14 20:59:38
+2025-04-14 21:00:04,474 - INFO - ⚡ Produzione fotovoltaico: -7.84 W
+2025-04-14 21:00:04,475 - INFO - 🏠 Assorbimento casa: 750.07 W
+2025-04-14 21:00:04,475 - INFO - 🔄 Differenza produzione - assorbimento: -757.90 W
+2025-04-14 21:00:04,529 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:00:04,529 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:01:02,450 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:01:04,663 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:01:04,663 - INFO - 🕒 Timestamp: 2025-04-14 21:00:38
+2025-04-14 21:01:04,664 - INFO - ⚡ Produzione fotovoltaico: -7.84 W
+2025-04-14 21:01:04,664 - INFO - 🏠 Assorbimento casa: 843.68 W
+2025-04-14 21:01:04,664 - INFO - 🔄 Differenza produzione - assorbimento: -851.53 W
+2025-04-14 21:01:04,711 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:01:04,711 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:01:27,867 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:02:02,627 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:02:04,747 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:02:04,748 - INFO - 🕒 Timestamp: 2025-04-14 21:01:38
+2025-04-14 21:02:04,748 - INFO - ⚡ Produzione fotovoltaico: -7.82 W
+2025-04-14 21:02:04,748 - INFO - 🏠 Assorbimento casa: 986.79 W
+2025-04-14 21:02:04,748 - INFO - 🔄 Differenza produzione - assorbimento: -994.61 W
+2025-04-14 21:02:04,796 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:02:04,796 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:03:02,837 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:03:04,997 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:03:04,998 - INFO - 🕒 Timestamp: 2025-04-14 21:02:38
+2025-04-14 21:03:04,998 - INFO - ⚡ Produzione fotovoltaico: -7.82 W
+2025-04-14 21:03:04,998 - INFO - 🏠 Assorbimento casa: 1169.67 W
+2025-04-14 21:03:04,998 - INFO - 🔄 Differenza produzione - assorbimento: -1177.49 W
+2025-04-14 21:03:05,046 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:03:05,046 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:03:24,245 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:04:02,208 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:04:04,358 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:04:04,361 - INFO - 🕒 Timestamp: 2025-04-14 21:03:38
+2025-04-14 21:04:04,361 - INFO - ⚡ Produzione fotovoltaico: -7.88 W
+2025-04-14 21:04:04,361 - INFO - 🏠 Assorbimento casa: 1371.43 W
+2025-04-14 21:04:04,362 - INFO - 🔄 Differenza produzione - assorbimento: -1379.31 W
+2025-04-14 21:04:04,410 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:04:04,410 - INFO - 🔌 Energia sufficiente (1200.00 W), invio comando 'charge_start'
+2025-04-14 21:04:04,473 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php charge_start
+2025-04-14 21:04:05,528 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 21:04:05,528 - INFO - 📤 Output: SAPI: cli
+2025-04-14 21:04:05,528 - INFO - 📤 Output: {
+2025-04-14 21:04:05,528 - INFO - 📤 Output:     "status": "success",
+2025-04-14 21:04:05,529 - INFO - 📤 Output:     "command_sent": "charge_start",
+2025-04-14 21:04:05,529 - INFO - 📤 Output:     "value": null,
+2025-04-14 21:04:05,529 - INFO - 📤 Output:     "output": [
+2025-04-14 21:04:05,529 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 21:04:05,529 - INFO - 📤 Output:     ],
+2025-04-14 21:04:05,529 - INFO - 📤 Output:     "code": 0
+2025-04-14 21:04:05,529 - INFO - 📤 Output: }
+2025-04-14 21:04:05,530 - INFO - ✅ Comando: charge_start, Stato: success, Codice: 0
+2025-04-14 21:04:05,530 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 21:04:05,531 - DEBUG - 👉 Controllo se 1200.00 >= 2860 (per 13 A)
+2025-04-14 21:04:05,531 - DEBUG - 👉 Controllo se 1200.00 >= 2640 (per 12 A)
+2025-04-14 21:04:05,531 - DEBUG - 👉 Controllo se 1200.00 >= 2420 (per 11 A)
+2025-04-14 21:04:05,532 - DEBUG - 👉 Controllo se 1200.00 >= 2200 (per 10 A)
+2025-04-14 21:04:05,532 - DEBUG - 👉 Controllo se 1200.00 >= 1980 (per 9 A)
+2025-04-14 21:04:05,532 - DEBUG - 👉 Controllo se 1200.00 >= 1760 (per 8 A)
+2025-04-14 21:04:05,532 - DEBUG - 👉 Controllo se 1200.00 >= 1540 (per 7 A)
+2025-04-14 21:04:05,532 - DEBUG - 👉 Controllo se 1200.00 >= 1320 (per 6 A)
+2025-04-14 21:04:05,532 - DEBUG - 👉 Controllo se 1200.00 >= 1100 (per 5 A)
+2025-04-14 21:04:05,532 - INFO - ⚡ Energia abbondante (1200.00 W), invio 'set_charging_amps' con value=5
+2025-04-14 21:04:05,699 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php set_charging_amps 5
+2025-04-14 21:04:06,648 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 21:04:06,649 - INFO - 📤 Output: SAPI: cli
+2025-04-14 21:04:06,649 - INFO - 📤 Output: {
+2025-04-14 21:04:06,649 - INFO - 📤 Output:     "status": "success",
+2025-04-14 21:04:06,649 - INFO - 📤 Output:     "command_sent": "set_charging_amps",
+2025-04-14 21:04:06,649 - INFO - 📤 Output:     "value": "5",
+2025-04-14 21:04:06,649 - INFO - 📤 Output:     "output": [
+2025-04-14 21:04:06,649 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 21:04:06,649 - INFO - 📤 Output:     ],
+2025-04-14 21:04:06,649 - INFO - 📤 Output:     "code": 0
+2025-04-14 21:04:06,649 - INFO - 📤 Output: }
+2025-04-14 21:04:06,649 - INFO - ✅ Comando: set_charging_amps, Stato: success, Codice: 0
+2025-04-14 21:04:06,649 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 21:04:06,708 - INFO - 💾 Stato ricarica registrato: 5 A
+2025-04-14 21:04:06,725 - INFO - 💾 Stato Tesla aggiornato nel DB (5 A).
+2025-04-14 21:05:02,721 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:05:05,033 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:05:05,033 - INFO - 🕒 Timestamp: 2025-04-14 21:04:38
+2025-04-14 21:05:05,034 - INFO - ⚡ Produzione fotovoltaico: -7.89 W
+2025-04-14 21:05:05,034 - INFO - 🏠 Assorbimento casa: 1443.21 W
+2025-04-14 21:05:05,034 - INFO - 🔄 Differenza produzione - assorbimento: -1451.10 W
+2025-04-14 21:05:05,084 - INFO - 🔌 Stato attuale Tesla: 5 A
+2025-04-14 21:05:05,084 - INFO - ⚡ Tesla sta già caricando (5 A), salto 'charge_start'
+2025-04-14 21:05:05,084 - DEBUG - 👉 Controllo se 1200.00 >= 2860 (per 13 A)
+2025-04-14 21:05:05,084 - DEBUG - 👉 Controllo se 1200.00 >= 2640 (per 12 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 2420 (per 11 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 2200 (per 10 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 1980 (per 9 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 1760 (per 8 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 1540 (per 7 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 1320 (per 6 A)
+2025-04-14 21:05:05,085 - DEBUG - 👉 Controllo se 1200.00 >= 1100 (per 5 A)
+2025-04-14 21:05:05,085 - INFO - 🔁 Amperaggio già impostato a 5 A, nessun comando inviato.
+2025-04-14 21:05:25,696 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:06:02,095 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:06:04,246 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:06:04,246 - INFO - 🕒 Timestamp: 2025-04-14 21:05:38
+2025-04-14 21:06:04,247 - INFO - ⚡ Produzione fotovoltaico: -7.95 W
+2025-04-14 21:06:04,247 - INFO - 🏠 Assorbimento casa: 1627.17 W
+2025-04-14 21:06:04,247 - INFO - 🔄 Differenza produzione - assorbimento: -1635.12 W
+2025-04-14 21:06:04,313 - INFO - 🔌 Stato attuale Tesla: 5 A
+2025-04-14 21:06:04,313 - INFO - ⚡ Tesla sta già caricando (5 A), salto 'charge_start'
+2025-04-14 21:06:04,313 - DEBUG - 👉 Controllo se 3200.00 >= 2860 (per 13 A)
+2025-04-14 21:06:04,313 - INFO - ⚡ Energia abbondante (3200.00 W), invio 'set_charging_amps' con value=13
+2025-04-14 21:06:04,387 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php set_charging_amps 13
+2025-04-14 21:06:05,301 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 21:06:05,301 - INFO - 📤 Output: SAPI: cli
+2025-04-14 21:06:05,301 - INFO - 📤 Output: {
+2025-04-14 21:06:05,301 - INFO - 📤 Output:     "status": "success",
+2025-04-14 21:06:05,301 - INFO - 📤 Output:     "command_sent": "set_charging_amps",
+2025-04-14 21:06:05,302 - INFO - 📤 Output:     "value": "13",
+2025-04-14 21:06:05,302 - INFO - 📤 Output:     "output": [
+2025-04-14 21:06:05,302 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 21:06:05,302 - INFO - 📤 Output:     ],
+2025-04-14 21:06:05,302 - INFO - 📤 Output:     "code": 0
+2025-04-14 21:06:05,303 - INFO - 📤 Output: }
+2025-04-14 21:06:05,303 - INFO - ✅ Comando: set_charging_amps, Stato: success, Codice: 0
+2025-04-14 21:06:05,303 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 21:06:05,425 - INFO - 💾 Stato ricarica registrato: 13 A
+2025-04-14 21:06:05,440 - INFO - 💾 Stato Tesla aggiornato nel DB (13 A).
+2025-04-14 21:06:34,775 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:07:02,490 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:07:04,712 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:07:04,712 - INFO - 🕒 Timestamp: 2025-04-14 21:06:39
+2025-04-14 21:07:04,712 - INFO - ⚡ Produzione fotovoltaico: -7.94 W
+2025-04-14 21:07:04,712 - INFO - 🏠 Assorbimento casa: 1814.92 W
+2025-04-14 21:07:04,712 - INFO - 🔄 Differenza produzione - assorbimento: -1822.86 W
+2025-04-14 21:07:04,769 - INFO - 🔌 Stato attuale Tesla: 13 A
+2025-04-14 21:07:04,769 - INFO - ⚠️ Energia insufficiente (-1822.86 W), invio comando 'charge_stop'
+2025-04-14 21:07:04,824 - INFO - 🚀 Eseguo comando remoto: php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php charge_stop
+2025-04-14 21:07:05,836 - INFO - 📤 Output: ✅ Avvio script
+2025-04-14 21:07:05,837 - INFO - 📤 Output: SAPI: cli
+2025-04-14 21:07:05,837 - INFO - 📤 Output: {
+2025-04-14 21:07:05,837 - INFO - 📤 Output:     "status": "success",
+2025-04-14 21:07:05,837 - INFO - 📤 Output:     "command_sent": "charge_stop",
+2025-04-14 21:07:05,837 - INFO - 📤 Output:     "value": null,
+2025-04-14 21:07:05,837 - INFO - 📤 Output:     "output": [
+2025-04-14 21:07:05,838 - INFO - 📤 Output:         "{\"response\":{\"result\":true,\"reason\":\"\"}}"
+2025-04-14 21:07:05,838 - INFO - 📤 Output:     ],
+2025-04-14 21:07:05,838 - INFO - 📤 Output:     "code": 0
+2025-04-14 21:07:05,838 - INFO - 📤 Output: }
+2025-04-14 21:07:05,838 - INFO - ✅ Comando: charge_stop, Stato: success, Codice: 0
+2025-04-14 21:07:05,838 - INFO - 📦 Risposta Tesla: {'result': True, 'reason': ''}
+2025-04-14 21:07:05,939 - INFO - 💾 Stato ricarica registrato: 0 A
+2025-04-14 21:07:05,948 - INFO - 💾 Stato Tesla aggiornato nel DB (0 A).
+2025-04-14 21:08:01,989 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:08:04,095 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:08:04,095 - INFO - 🕒 Timestamp: 2025-04-14 21:07:39
+2025-04-14 21:08:04,095 - INFO - ⚡ Produzione fotovoltaico: -7.97 W
+2025-04-14 21:08:04,096 - INFO - 🏠 Assorbimento casa: 1851.77 W
+2025-04-14 21:08:04,096 - INFO - 🔄 Differenza produzione - assorbimento: -1859.74 W
+2025-04-14 21:08:04,149 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:08:04,149 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:09:02,113 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:09:04,345 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:09:04,345 - INFO - 🕒 Timestamp: 2025-04-14 21:08:39
+2025-04-14 21:09:04,345 - INFO - ⚡ Produzione fotovoltaico: -7.98 W
+2025-04-14 21:09:04,345 - INFO - 🏠 Assorbimento casa: 1854.57 W
+2025-04-14 21:09:04,345 - INFO - 🔄 Differenza produzione - assorbimento: -1862.56 W
+2025-04-14 21:09:04,396 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:09:04,396 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:10:02,316 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:10:04,615 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:10:04,616 - INFO - 🕒 Timestamp: 2025-04-14 21:09:39
+2025-04-14 21:10:04,616 - INFO - ⚡ Produzione fotovoltaico: -7.98 W
+2025-04-14 21:10:04,616 - INFO - 🏠 Assorbimento casa: 1803.48 W
+2025-04-14 21:10:04,616 - INFO - 🔄 Differenza produzione - assorbimento: -1811.46 W
+2025-04-14 21:10:04,666 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:10:04,666 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:11:02,570 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:11:04,593 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:11:04,593 - INFO - 🕒 Timestamp: 2025-04-14 21:10:39
+2025-04-14 21:11:04,593 - INFO - ⚡ Produzione fotovoltaico: -7.95 W
+2025-04-14 21:11:04,593 - INFO - 🏠 Assorbimento casa: 1722.53 W
+2025-04-14 21:11:04,593 - INFO - 🔄 Differenza produzione - assorbimento: -1730.49 W
+2025-04-14 21:11:04,639 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:11:04,639 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:12:02,507 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:12:04,596 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:12:04,596 - INFO - 🕒 Timestamp: 2025-04-14 21:11:39
+2025-04-14 21:12:04,597 - INFO - ⚡ Produzione fotovoltaico: -7.93 W
+2025-04-14 21:12:04,597 - INFO - 🏠 Assorbimento casa: 1669.34 W
+2025-04-14 21:12:04,597 - INFO - 🔄 Differenza produzione - assorbimento: -1677.27 W
+2025-04-14 21:12:04,656 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:12:04,657 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:13:02,736 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:13:05,023 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:13:05,023 - INFO - 🕒 Timestamp: 2025-04-14 21:12:39
+2025-04-14 21:13:05,023 - INFO - ⚡ Produzione fotovoltaico: -7.98 W
+2025-04-14 21:13:05,023 - INFO - 🏠 Assorbimento casa: 1577.52 W
+2025-04-14 21:13:05,023 - INFO - 🔄 Differenza produzione - assorbimento: -1585.50 W
+2025-04-14 21:13:05,076 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:13:05,076 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:14:01,969 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:14:04,005 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:14:04,005 - INFO - 🕒 Timestamp: 2025-04-14 21:13:40
+2025-04-14 21:14:04,005 - INFO - ⚡ Produzione fotovoltaico: -7.91 W
+2025-04-14 21:14:04,005 - INFO - 🏠 Assorbimento casa: 1453.00 W
+2025-04-14 21:14:04,005 - INFO - 🔄 Differenza produzione - assorbimento: -1460.91 W
+2025-04-14 21:14:04,057 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:14:04,057 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:15:02,055 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:15:04,167 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:15:04,167 - INFO - 🕒 Timestamp: 2025-04-14 21:14:40
+2025-04-14 21:15:04,167 - INFO - ⚡ Produzione fotovoltaico: -7.93 W
+2025-04-14 21:15:04,167 - INFO - 🏠 Assorbimento casa: 1442.89 W
+2025-04-14 21:15:04,167 - INFO - 🔄 Differenza produzione - assorbimento: -1450.81 W
+2025-04-14 21:15:04,226 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:15:04,226 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:16:02,255 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:16:04,179 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:16:04,179 - INFO - 🕒 Timestamp: 2025-04-14 21:15:40
+2025-04-14 21:16:04,179 - INFO - ⚡ Produzione fotovoltaico: -7.92 W
+2025-04-14 21:16:04,179 - INFO - 🏠 Assorbimento casa: 1453.52 W
+2025-04-14 21:16:04,179 - INFO - 🔄 Differenza produzione - assorbimento: -1461.44 W
+2025-04-14 21:16:04,222 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:16:04,223 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:17:02,192 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:17:04,401 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:17:04,401 - INFO - 🕒 Timestamp: 2025-04-14 21:16:40
+2025-04-14 21:17:04,401 - INFO - ⚡ Produzione fotovoltaico: -7.93 W
+2025-04-14 21:17:04,401 - INFO - 🏠 Assorbimento casa: 1472.56 W
+2025-04-14 21:17:04,401 - INFO - 🔄 Differenza produzione - assorbimento: -1480.49 W
+2025-04-14 21:17:04,452 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:17:04,452 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:18:02,418 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:18:04,552 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:18:04,552 - INFO - 🕒 Timestamp: 2025-04-14 21:17:40
+2025-04-14 21:18:04,552 - INFO - ⚡ Produzione fotovoltaico: -7.95 W
+2025-04-14 21:18:04,553 - INFO - 🏠 Assorbimento casa: 1491.06 W
+2025-04-14 21:18:04,553 - INFO - 🔄 Differenza produzione - assorbimento: -1499.00 W
+2025-04-14 21:18:04,606 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:18:04,607 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:19:02,611 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:19:04,926 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:19:04,926 - INFO - 🕒 Timestamp: 2025-04-14 21:18:40
+2025-04-14 21:19:04,926 - INFO - ⚡ Produzione fotovoltaico: -7.89 W
+2025-04-14 21:19:04,926 - INFO - 🏠 Assorbimento casa: 1504.01 W
+2025-04-14 21:19:04,927 - INFO - 🔄 Differenza produzione - assorbimento: -1511.90 W
+2025-04-14 21:19:04,974 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:19:04,975 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:20:02,065 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:20:04,392 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:20:04,393 - INFO - 🕒 Timestamp: 2025-04-14 21:19:40
+2025-04-14 21:20:04,393 - INFO - ⚡ Produzione fotovoltaico: -7.91 W
+2025-04-14 21:20:04,393 - INFO - 🏠 Assorbimento casa: 1412.01 W
+2025-04-14 21:20:04,393 - INFO - 🔄 Differenza produzione - assorbimento: -1419.91 W
+2025-04-14 21:20:04,446 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:20:04,446 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:21:02,468 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:21:04,657 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:21:04,657 - INFO - 🕒 Timestamp: 2025-04-14 21:20:40
+2025-04-14 21:21:04,657 - INFO - ⚡ Produzione fotovoltaico: -7.86 W
+2025-04-14 21:21:04,657 - INFO - 🏠 Assorbimento casa: 1299.79 W
+2025-04-14 21:21:04,657 - INFO - 🔄 Differenza produzione - assorbimento: -1307.65 W
+2025-04-14 21:21:04,733 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:21:04,738 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:22:02,884 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:22:05,019 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:22:05,019 - INFO - 🕒 Timestamp: 2025-04-14 21:21:41
+2025-04-14 21:22:05,020 - INFO - ⚡ Produzione fotovoltaico: -7.84 W
+2025-04-14 21:22:05,020 - INFO - 🏠 Assorbimento casa: 1121.52 W
+2025-04-14 21:22:05,020 - INFO - 🔄 Differenza produzione - assorbimento: -1129.36 W
+2025-04-14 21:22:05,121 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:22:05,121 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:23:02,244 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:23:04,520 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:23:04,520 - INFO - 🕒 Timestamp: 2025-04-14 21:22:41
+2025-04-14 21:23:04,521 - INFO - ⚡ Produzione fotovoltaico: -7.98 W
+2025-04-14 21:23:04,521 - INFO - 🏠 Assorbimento casa: 978.75 W
+2025-04-14 21:23:04,521 - INFO - 🔄 Differenza produzione - assorbimento: -986.73 W
+2025-04-14 21:23:04,568 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:23:04,568 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:24:02,506 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:24:04,713 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:24:04,713 - INFO - 🕒 Timestamp: 2025-04-14 21:23:41
+2025-04-14 21:24:04,713 - INFO - ⚡ Produzione fotovoltaico: -8.05 W
+2025-04-14 21:24:04,713 - INFO - 🏠 Assorbimento casa: 829.23 W
+2025-04-14 21:24:04,713 - INFO - 🔄 Differenza produzione - assorbimento: -837.28 W
+2025-04-14 21:24:04,759 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:24:04,760 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:25:02,784 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:25:04,854 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:25:04,854 - INFO - 🕒 Timestamp: 2025-04-14 21:24:41
+2025-04-14 21:25:04,854 - INFO - ⚡ Produzione fotovoltaico: -8.00 W
+2025-04-14 21:25:04,854 - INFO - 🏠 Assorbimento casa: 822.51 W
+2025-04-14 21:25:04,854 - INFO - 🔄 Differenza produzione - assorbimento: -830.51 W
+2025-04-14 21:25:04,913 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:25:04,913 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:26:01,955 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:26:04,269 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:26:04,270 - INFO - 🕒 Timestamp: 2025-04-14 21:25:41
+2025-04-14 21:26:04,270 - INFO - ⚡ Produzione fotovoltaico: -8.05 W
+2025-04-14 21:26:04,270 - INFO - 🏠 Assorbimento casa: 819.00 W
+2025-04-14 21:26:04,270 - INFO - 🔄 Differenza produzione - assorbimento: -827.05 W
+2025-04-14 21:26:04,435 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:26:04,436 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:27:02,628 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:27:04,843 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:27:04,843 - INFO - 🕒 Timestamp: 2025-04-14 21:26:42
+2025-04-14 21:27:04,843 - INFO - ⚡ Produzione fotovoltaico: -8.06 W
+2025-04-14 21:27:04,843 - INFO - 🏠 Assorbimento casa: 819.15 W
+2025-04-14 21:27:04,843 - INFO - 🔄 Differenza produzione - assorbimento: -827.21 W
+2025-04-14 21:27:04,890 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:27:04,891 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:28:03,188 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:28:07,581 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:28:07,581 - INFO - 🕒 Timestamp: 2025-04-14 21:27:42
+2025-04-14 21:28:07,581 - INFO - ⚡ Produzione fotovoltaico: -7.88 W
+2025-04-14 21:28:07,582 - INFO - 🏠 Assorbimento casa: 816.19 W
+2025-04-14 21:28:07,582 - INFO - 🔄 Differenza produzione - assorbimento: -824.08 W
+2025-04-14 21:28:07,644 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:28:07,644 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:29:02,616 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:29:04,877 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:29:04,877 - INFO - 🕒 Timestamp: 2025-04-14 21:28:42
+2025-04-14 21:29:04,878 - INFO - ⚡ Produzione fotovoltaico: -7.87 W
+2025-04-14 21:29:04,878 - INFO - 🏠 Assorbimento casa: 810.31 W
+2025-04-14 21:29:04,878 - INFO - 🔄 Differenza produzione - assorbimento: -818.18 W
+2025-04-14 21:29:04,939 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:29:04,939 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:30:02,356 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:30:04,441 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:30:04,441 - INFO - 🕒 Timestamp: 2025-04-14 21:29:42
+2025-04-14 21:30:04,441 - INFO - ⚡ Produzione fotovoltaico: -7.92 W
+2025-04-14 21:30:04,442 - INFO - 🏠 Assorbimento casa: 802.82 W
+2025-04-14 21:30:04,442 - INFO - 🔄 Differenza produzione - assorbimento: -810.73 W
+2025-04-14 21:30:04,501 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:30:04,501 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:31:02,484 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:31:04,711 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:31:04,711 - INFO - 🕒 Timestamp: 2025-04-14 21:30:43
+2025-04-14 21:31:04,711 - INFO - ⚡ Produzione fotovoltaico: -7.89 W
+2025-04-14 21:31:04,711 - INFO - 🏠 Assorbimento casa: 802.86 W
+2025-04-14 21:31:04,712 - INFO - 🔄 Differenza produzione - assorbimento: -810.74 W
+2025-04-14 21:31:04,770 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:31:04,770 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:32:02,806 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:32:04,855 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:32:04,856 - INFO - 🕒 Timestamp: 2025-04-14 21:31:43
+2025-04-14 21:32:04,856 - INFO - ⚡ Produzione fotovoltaico: -7.88 W
+2025-04-14 21:32:04,856 - INFO - 🏠 Assorbimento casa: 793.26 W
+2025-04-14 21:32:04,856 - INFO - 🔄 Differenza produzione - assorbimento: -801.15 W
+2025-04-14 21:32:04,901 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:32:04,901 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:33:01,864 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:33:04,040 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:33:04,040 - INFO - 🕒 Timestamp: 2025-04-14 21:32:43
+2025-04-14 21:33:04,040 - INFO - ⚡ Produzione fotovoltaico: -7.90 W
+2025-04-14 21:33:04,040 - INFO - 🏠 Assorbimento casa: 797.18 W
+2025-04-14 21:33:04,041 - INFO - 🔄 Differenza produzione - assorbimento: -805.08 W
+2025-04-14 21:33:04,105 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:33:04,106 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:34:01,984 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:34:04,234 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:34:04,234 - INFO - 🕒 Timestamp: 2025-04-14 21:33:43
+2025-04-14 21:34:04,234 - INFO - ⚡ Produzione fotovoltaico: -7.90 W
+2025-04-14 21:34:04,234 - INFO - 🏠 Assorbimento casa: 800.23 W
+2025-04-14 21:34:04,235 - INFO - 🔄 Differenza produzione - assorbimento: -808.13 W
+2025-04-14 21:34:04,296 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:34:04,296 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:35:02,343 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:35:04,621 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:35:04,621 - INFO - 🕒 Timestamp: 2025-04-14 21:34:43
+2025-04-14 21:35:04,621 - INFO - ⚡ Produzione fotovoltaico: -7.91 W
+2025-04-14 21:35:04,621 - INFO - 🏠 Assorbimento casa: 800.71 W
+2025-04-14 21:35:04,621 - INFO - 🔄 Differenza produzione - assorbimento: -808.61 W
+2025-04-14 21:35:04,673 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:35:04,673 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
+2025-04-14 21:36:02,737 - INFO - Logger configurato con rotazione giornaliera.
+2025-04-14 21:36:05,065 - INFO - 🔋 Ultimo dato registrato:
+2025-04-14 21:36:05,065 - INFO - 🕒 Timestamp: 2025-04-14 21:35:43
+2025-04-14 21:36:05,065 - INFO - ⚡ Produzione fotovoltaico: -7.89 W
+2025-04-14 21:36:05,065 - INFO - 🏠 Assorbimento casa: 802.14 W
+2025-04-14 21:36:05,065 - INFO - 🔄 Differenza produzione - assorbimento: -810.03 W
+2025-04-14 21:36:05,118 - INFO - 🔌 Stato attuale Tesla: 0 A
+2025-04-14 21:36:05,118 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.

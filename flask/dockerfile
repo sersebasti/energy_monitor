@@ -4,9 +4,15 @@ FROM python:3.9-slim
 # Imposta la directory di lavoro nel contenitore
 WORKDIR /app
 
-# Copia i file nel contenitore
+# Copia i file dell'app nel contenitore
 COPY app.py /app
 COPY requirements.txt /app
+
+# Crea le directory per i log e i dati 
+RUN mkdir -p /app/data && mkdir -p /app/logs
+
+# Imposta i permessi
+RUN chmod -R 777 /app
 
 # Installa le dipendenze
 RUN pip install --no-cache-dir -r requirements.txt
