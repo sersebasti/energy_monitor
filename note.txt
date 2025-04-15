@@ -1,2 +1,1 @@
-# comando per cancella i logs di un container
-sudo truncate -s 0 $(docker inspect --format='{{.LogPath}}' <container_id>)
+

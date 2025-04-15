@@ -1,2 +1,12 @@
 https://auth.tesla.com/oauth2/v3/authorize?&client_id=ba139392-c1d5-436e-b8cf-7c64cb52e537&locale&locale=en-US&prompt=login&redirect_uri=https://flask.sersebasti.com/callback&response_type=code&scope=openid vehicle_device_data offline_access vehicle_cmds&state=e645765hy567
 
+
+GET
+https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/vehicles/LRW3E7FA9MC345603
+
+{
+    "response": null,
+    "error": "vehicle unavailable: vehicle is offline or asleep",
+    "error_description": "",
+    "txid": "f61c755e520cb558baa53d1c1ef57131"
+}
