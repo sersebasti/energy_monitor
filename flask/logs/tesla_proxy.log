@@ -1,8 +1,0 @@
-2025-04-15 07:27:02,145 - INFO - Logger configurato con rotazione giornaliera.
-2025-04-15 07:27:04,297 - INFO - 🔋 Ultimo dato registrato:
-2025-04-15 07:27:04,297 - INFO - 🕒 Timestamp: 2025-04-15 07:26:21
-2025-04-15 07:27:04,297 - INFO - ⚡ Produzione fotovoltaico: 24.35 W
-2025-04-15 07:27:04,297 - INFO - 🏠 Assorbimento casa: 978.83 W
-2025-04-15 07:27:04,297 - INFO - 🔄 Differenza produzione - assorbimento: -954.47 W
-2025-04-15 07:27:04,343 - INFO - 🔌 Stato attuale Tesla: 0 A
-2025-04-15 07:27:04,343 - INFO - 🔁 Tesla non sta caricando (già 0 A), nessun comando 'charge_stop' inviato.
