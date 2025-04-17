@@ -1,0 +1,7 @@
+{
+  "CLIENT_ID": "ba139392-c1d5-436e-b8cf-7c64cb52e537",
+  "CLIENT_SECRET": "ta-secret.EIOXZ12%eEACq43R",
+  "REDIRECT_URI": "https://flask.sersebasti.com/callback",
+  "TOKEN_URL": "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+  "VIN": "LRW3E7FA9MC345603"
+}

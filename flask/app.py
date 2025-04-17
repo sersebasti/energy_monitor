@@ -19,13 +19,21 @@ from mysql.connector import Error # type: ignore
 
 app = Flask(__name__)
 
-# Parametri Tesla
-CLIENT_ID = "ba139392-c1d5-436e-b8cf-7c64cb52e537"
-CLIENT_SECRET = os.getenv("CLIENT_SECRET", "default_secret")       
-REDIRECT_URI = "https://flask.sersebasti.com/callback"
-TOKEN_URL = "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token"
 
-VIN = "LRW3E7FA9MC345603"
+# Percorso al file di configurazione
+config_path = "/app/config.json"
+
+# Carica la configurazione
+with open(config_path, "r") as f:
+    CONFIG = json.load(f)
+    
+    
+    
+CLIENT_ID = CONFIG["CLIENT_ID"]
+CLIENT_SECRET = CONFIG["CLIENT_SECRET"]
+REDIRECT_URI = CONFIG["REDIRECT_URI"]
+TOKEN_URL = CONFIG["TOKEN_URL"]
+VIN = CONFIG["VIN"]
     
 # Verifica se la directory esiste, altrimenti la crea
 log_directory = "/app/logs"
@@ -405,7 +413,39 @@ async def run_remote_command(command="wake_up", value=None):
     except (OSError, asyncssh.Error) as e:
         logger.error(f"❌ Errore nella connessione SSH o nell'esecuzione: {e}")
 
+def aggiorna_log_media_mobile(minuti=60):
+    try:
+        conn = mysql.connector.connect(
+            host=os.getenv("MYSQL_HOST", "mysql"),
+            user=os.getenv("MYSQL_USER", "root"),
+            password=os.getenv("MYSQL_PASSWORD", "local"),
+            database=os.getenv("MYSQL_DATABASE", "dati")
+        )
+        cursor = conn.cursor(dictionary=True)
 
+        cursor.callproc("get_media_mobile", [minuti])
+
+        for result in cursor.stored_results():
+            row = result.fetchone()
+            if row:
+                produzione = float(row['media_produzione_foto'])
+                assorbimento = float(row['media_assorbimento_casa'])
+                differenza = produzione - assorbimento
+                timestamp = row['timestamp']
+
+                insert_query = """
+                    INSERT INTO log_media_mobile (timestamp, media_produzione_foto, media_assorbimento_casa, differenza)
+                    VALUES (%s, %s, %s, %s)
+                """
+                cursor = conn.cursor()
+                cursor.execute(insert_query, (timestamp, produzione, assorbimento, differenza))
+                conn.commit()
+
+                logger.info("✅ Inserita media mobile in log_media_mobile.")
+            else:
+                logger.warning("⚠️ Nessun dato restituito dalla procedura.")
+    except Error as e:
+        logger.error(f"❌ Errore durante l'inserimento della media mobile: {e}")
 
 
 
@@ -420,8 +460,10 @@ def log_last_power_data():
 
         cursor = conn.cursor(dictionary=True)
 
+        # Preleva l'ultima riga inserita nel log
         query = """
-            SELECT * FROM media_mobile_5min
+            SELECT timestamp, media_produzione_foto, media_assorbimento_casa, differenza
+            FROM log_media_mobile
             ORDER BY timestamp DESC
             LIMIT 1
         """
@@ -430,23 +472,23 @@ def log_last_power_data():
 
         if row:
             produzione = float(row['media_produzione_foto'])
-            #produzione = 1500
             assorbimento = float(row['media_assorbimento_casa'])
-            differenza = produzione - assorbimento
+            differenza = float(row['differenza'])
+            timestamp = row['timestamp']
 
-            logger.info("🔋 Ultimo dato registrato:")
-            logger.info(f"🕒 Timestamp: {row['timestamp']}")
+            logger.info("🔋 Ultimo dato da log_media_mobile:")
+            logger.info(f"🕒 Timestamp: {timestamp}")
             logger.info(f"⚡ Produzione fotovoltaico: {produzione:.2f} W")
             logger.info(f"🏠 Assorbimento casa: {assorbimento:.2f} W")
             logger.info(f"🔄 Differenza produzione - assorbimento: {differenza:.2f} W")
 
             return differenza
         else:
-            logger.warning("⚠️ Nessun dato trovato nella tabella media_mobile_5min.")
+            logger.warning("⚠️ Nessun dato trovato nella tabella log_media_mobile.")
             return None
 
     except Error as e:
-        logger.error(f"❌ Errore MySQL: {e}")
+        logger.error(f"❌ Errore MySQL durante la lettura: {e}")
         return None
 
 
