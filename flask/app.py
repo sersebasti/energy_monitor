@@ -15,6 +15,7 @@ from logging.handlers import TimedRotatingFileHandler
 from flask import Flask, request, jsonify, Response
 from datetime import datetime
 from mysql.connector import Error # type: ignore
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -34,6 +35,7 @@ CLIENT_SECRET = CONFIG["CLIENT_SECRET"]
 REDIRECT_URI = CONFIG["REDIRECT_URI"]
 TOKEN_URL = CONFIG["TOKEN_URL"]
 VIN = CONFIG["VIN"]
+MAX_ENERGY_PRELEVABILE = CONFIG["MAX_ENERGY_PRELEVABILE"]
     
 # Verifica se la directory esiste, altrimenti la crea
 log_directory = "/app/logs"
@@ -288,28 +290,31 @@ async def ensure_vehicle_awake(max_attempts=3, delay=10):
         data = await get_vehicle_data()
 
         if data and isinstance(data, dict):
-            response = data.get("response", {})
-            vehicle_name = response.get("vehicle_state", {}).get("vehicle_name")
-            charge_state = response.get("charge_state", {})
-            actual_current = charge_state.get("charger_actual_current")
-            port_latch = charge_state.get("charge_port_latch")
-
-            # Log dettagliato con lo stato del cavo
-            if vehicle_name is not None and actual_current is not None:
-                cable_status = "collegato ✅" if port_latch == "Engaged" else "non collegato ❌"
-                logger.info(f"✅ Veicolo online: nome = {vehicle_name}, corrente = {actual_current} A, cavo = {cable_status}")
-
-                if port_latch != "Engaged":
-                    logger.warning("🔌 Cavo non collegato! Nessuna ricarica possibile.")
-                    return None
-
-                return data
-
+            response = data.get("response")
+            if not response or not isinstance(response, dict):
+                logger.warning("⚠️ 'response' non trovato o non valido nella risposta dell'API.")
+                logger.debug(f"📦 Risposta grezza ricevuta: {data}")
             else:
-                logger.debug(f"🕵️‍♂️ Dati ricevuti ma incompleti. Nome: {vehicle_name}, Corrente: {actual_current}, Latch: {port_latch}")
+                vehicle_name = response.get("vehicle_state", {}).get("vehicle_name")
+                charge_state = response.get("charge_state", {})
+                actual_current = charge_state.get("charger_actual_current")
+                port_latch = charge_state.get("charge_port_latch")
 
+                # Log dettagliato con lo stato del cavo
+                if vehicle_name is not None and actual_current is not None:
+                    cable_status = "collegato ✅" if port_latch == "Engaged" else "non collegato ❌"
+                    logger.info(f"✅ Veicolo online: nome = {vehicle_name}, corrente = {actual_current} A, cavo = {cable_status}")
+
+                    if port_latch != "Engaged":
+                        logger.warning("🔌 Cavo non collegato! Nessuna ricarica possibile.")
+                        return None
+
+                    return data
+                else:
+                    logger.debug(f"🕵️‍♂️ Dati ricevuti ma incompleti. Nome: {vehicle_name}, Corrente: {actual_current}, Latch: {port_latch}")
         else:
             logger.warning("⚠️ Nessuna risposta valida dal veicolo.")
+            logger.debug(f"📦 Risposta grezza ricevuta: {data}")
 
         if attempt < max_attempts:
             logger.info("🚨 Invio comando 'wake_up' via SSH...")
@@ -318,7 +323,6 @@ async def ensure_vehicle_awake(max_attempts=3, delay=10):
         else:
             logger.error("❌ Tentativi esauriti. Impossibile ottenere dati dal veicolo.")
             return None
-
 
 
 
@@ -344,68 +348,58 @@ async def run_remote_command(command="wake_up", value=None, retry_on_fail=True):
                 for line in output_lines:
                     logger.info(f"📤 Output: {line}")
 
+                # Estrae il blocco JSON principale
                 full_output = "\n".join(output_lines)
                 json_start = full_output.find('{')
-                if json_start != -1:
-                    json_str = full_output[json_start:]
-                    try:
-                        data = json.loads(json_str)
-                        command_sent = data.get("command_sent")
-                        status = data.get("status")
-                        code = data.get("code")
-                        logger.info(f"✅ Comando: {command_sent}, Stato: {status}, Codice: {code}")
-
-                        charging_amps_to_log = None
-                        if isinstance(data.get("output"), list) and data["output"]:
-                            inner_output = data["output"][0]
-                            try:
-                                inner_data = json.loads(inner_output)
-                                response = inner_data.get("response")
-                                logger.info(f"📦 Risposta Tesla: {response}")
-
-                                if command_sent == "charge_stop":
-                                    if (response and response.get("result")) or \
-                                       (response and not response.get("result") and "not_charging" in response.get("string", "")):
-                                        charging_amps_to_log = 0
-
-                                elif command_sent == "set_charging_amps" and response and response.get("result"):
-                                    try:
-                                        charging_amps_to_log = int(value)
-                                    except Exception:
-                                        logger.warning("⚠️ Valore amperaggio non valido per inserimento DB.")
-
-                                if charging_amps_to_log is not None:
-                                    try:
-                                        conn_db = mysql.connector.connect(
-                                            host=os.getenv("MYSQL_HOST", "mysql"),
-                                            user=os.getenv("MYSQL_USER", "root"),
-                                            password=os.getenv("MYSQL_PASSWORD", "local"),
-                                            database=os.getenv("MYSQL_DATABASE", "dati")
-                                        )
-                                        cursor = conn_db.cursor()
-                                        insert_query = "INSERT INTO tesla_status (timestamp, charging_amps) VALUES (%s, %s)"
-                                        cursor.execute(insert_query, (datetime.now(), charging_amps_to_log))
-                                        conn_db.commit()
-                                        logger.info(f"💾 Stato ricarica registrato: {charging_amps_to_log} A")
-                                    except Error as db_err:
-                                        logger.error(f"❌ Errore inserimento DB: {db_err}")
-                                    finally:
-                                        if cursor:
-                                            cursor.close()
-                                        if conn_db:
-                                            conn_db.close()
-
-                                if inner_data.get("error"):
-                                    logger.warning(f"⚠️ Errore Tesla: {inner_data.get('error_description')}")
-
-                            except json.JSONDecodeError:
-                                logger.warning("⚠️ JSON interno non valido.")
-                        return data
-
-                    except json.JSONDecodeError:
-                        logger.warning("⚠️ JSON principale non valido.")
-                else:
+                if json_start == -1:
                     logger.warning("⚠️ Nessun blocco JSON trovato nell’output.")
+                    return None
+
+                try:
+                    data = json.loads(full_output[json_start:])
+                except json.JSONDecodeError:
+                    logger.warning("⚠️ JSON principale non valido.")
+                    return None
+
+                command_sent = data.get("command_sent")
+                status = data.get("status")
+                code = data.get("code")
+                logger.info(f"✅ Comando: {command_sent}, Stato: {status}, Codice: {code}")
+
+                # Parsing dell'output interno
+                output_list = data.get("output")
+                if not output_list or not isinstance(output_list, list):
+                    return data
+
+                try:
+                    inner_data = json.loads(output_list[0])
+                except json.JSONDecodeError:
+                    logger.warning("⚠️ JSON interno non valido.")
+                    return data
+
+                response = inner_data.get("response")
+                logger.info(f"📦 Risposta Tesla: {response}")
+
+                charging_amps_to_log = None
+
+                if command_sent == "charge_stop" and response:
+                    if response.get("result") or "not_charging" in response.get("string", ""):
+                        charging_amps_to_log = 0
+
+                elif command_sent == "set_charging_amps" and response and response.get("result"):
+                    try:
+                        charging_amps_to_log = int(value)
+                    except Exception:
+                        logger.warning("⚠️ Valore amperaggio non valido per inserimento DB.")
+
+                if charging_amps_to_log is not None:
+                    insert_tesla_status(charging_amps_to_log)
+
+                if inner_data.get("error"):
+                    logger.warning(f"⚠️ Errore Tesla: {inner_data.get('error_description')}")
+
+                return data
+
         except (OSError, asyncssh.Error) as e:
             logger.error(f"❌ Errore nella connessione SSH o nell'esecuzione: {e}")
             return None
@@ -425,53 +419,49 @@ async def run_remote_command(command="wake_up", value=None, retry_on_fail=True):
     return result
 
 def aggiorna_log_media_mobile(minuti=60):
-    try:
-        conn = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "mysql"),
-            user=os.getenv("MYSQL_USER", "root"),
-            password=os.getenv("MYSQL_PASSWORD", "local"),
-            database=os.getenv("MYSQL_DATABASE", "dati")
-        )
-        cursor = conn.cursor(dictionary=True)
+    conn, _ = get_db_connection()
+    if not conn:
+        return
 
+    try:
+        cursor = conn.cursor(dictionary=True)
         cursor.callproc("get_media_mobile", [minuti])
 
         for result in cursor.stored_results():
             row = result.fetchone()
             if row:
-                produzione = float(row['media_produzione_foto'])
-                assorbimento = float(row['media_assorbimento_casa'])
+                timestamp = row["timestamp"]
+                produzione = float(row["media_produzione_foto"])
+                assorbimento = float(row["media_assorbimento_casa"])
                 differenza = produzione - assorbimento
-                timestamp = row['timestamp']
 
                 insert_query = """
                     INSERT INTO log_media_mobile (timestamp, media_produzione_foto, media_assorbimento_casa, differenza)
                     VALUES (%s, %s, %s, %s)
                 """
-                cursor = conn.cursor()
-                cursor.execute(insert_query, (timestamp, produzione, assorbimento, differenza))
+                insert_cursor = conn.cursor()
+                insert_cursor.execute(insert_query, (timestamp, produzione, assorbimento, differenza))
                 conn.commit()
+                insert_cursor.close()
 
                 logger.info("✅ Inserita media mobile in log_media_mobile.")
             else:
                 logger.warning("⚠️ Nessun dato restituito dalla procedura.")
+
     except Error as e:
         logger.error(f"❌ Errore durante l'inserimento della media mobile: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
 
 
 def log_last_power_data():
+    conn, cursor = get_db_connection()
+    if not conn:
+        return None
+
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "mysql"),
-            user=os.getenv("MYSQL_USER", "root"),
-            password=os.getenv("MYSQL_PASSWORD", "local"),
-            database=os.getenv("MYSQL_DATABASE", "dati")
-        )
-
-        cursor = conn.cursor(dictionary=True)
-
-        # Preleva l'ultima riga inserita nel log
         query = """
             SELECT timestamp, media_produzione_foto, media_assorbimento_casa, differenza
             FROM log_media_mobile
@@ -482,10 +472,7 @@ def log_last_power_data():
         row = cursor.fetchone()
 
         if row:
-            produzione = float(row['media_produzione_foto'])
-            assorbimento = float(row['media_assorbimento_casa'])
-            differenza = float(row['differenza'])
-            timestamp = row['timestamp']
+            timestamp, produzione, assorbimento, differenza = row
 
             logger.info("🔋 Ultimo dato da log_media_mobile:")
             logger.info(f"🕒 Timestamp: {timestamp}")
@@ -501,11 +488,52 @@ def log_last_power_data():
     except Error as e:
         logger.error(f"❌ Errore MySQL durante la lettura: {e}")
         return None
+    finally:
+        cursor.close()
+        conn.close()
 
 
 
 
 async def check_and_charge_tesla():
+    
+    
+    ok, motivo = dati_recenti_valide(x_minuti_media_mobile=5, x_minuti_tesla_status=180)
+    if not ok:
+        logger.warning(f"⛔ {motivo}. Provo a sistemare...")
+
+        if "media mobile" in motivo.lower():
+            try:
+                aggiorna_log_media_mobile()
+                logger.info("📈 Aggiornamento media mobile eseguito.")
+            except Exception as e:
+                logger.error(f"❌ Errore aggiornamento media mobile: {e}")
+
+        if "tesla" in motivo.lower():
+            try:
+                data = await ensure_vehicle_awake()
+
+                if data:
+                    response = data.get("response", {})
+                    charge_state = response.get("charge_state", {})
+                    actual_current = charge_state.get("charger_actual_current", 0)
+
+                    # 💾 Scrive corrente nel DB
+                    insert_tesla_status(charging_amps=int(actual_current))
+                    logger.info(f"💾 Stato Tesla aggiornato da ensure_vehicle_awake(): {actual_current} A")
+                else:
+                    logger.warning("⚠️ ensure_vehicle_awake() non ha restituito dati validi.")
+
+            except Exception as e:
+                logger.error(f"❌ Errore nel tentativo di risvegliare la Tesla: {e}")
+
+    # 🔁 Seconda verifica dopo i tentativi
+    ok2, motivo2 = dati_recenti_valide(x_minuti_media_mobile=5, x_minuti_tesla_status=180)
+    if not ok2:
+        logger.warning(f"⛔ Dati ancora non recenti: {motivo2}. Annullato invio comandi alla Tesla.")
+        return
+
+
     differenza = get_last_logged_difference()
     if differenza is None:
         logger.warning("⚠️ Differenza non calcolabile dal DB, nessuna azione eseguita.")
@@ -513,95 +541,137 @@ async def check_and_charge_tesla():
 
     logger.info(f"📊 Differenza energetica più recente: {differenza:.2f} W")
 
-    # 🔍 Recupera ultimo valore corrente da tesla_status
-    try:
-        conn = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "mysql"),
-            user=os.getenv("MYSQL_USER", "root"),
-            password=os.getenv("MYSQL_PASSWORD", "local"),
-            database=os.getenv("MYSQL_DATABASE", "dati")
-        )
-        cursor = conn.cursor(dictionary=True)
+    max_energy_prelevabile = float(MAX_ENERGY_PRELEVABILE)
+    logger.info(f"🔧 max_energy_prelevabile configurato: {max_energy_prelevabile} W")
 
+    soglia_minima = 5 * 220
+    energia_effettiva = differenza + max_energy_prelevabile
+    
+    conn, cursor = get_db_connection()
+    if not conn:
+        return
+
+    try:
         cursor.execute("SELECT charging_amps FROM tesla_status ORDER BY timestamp DESC LIMIT 1")
         row = cursor.fetchone()
-        current_amps = row["charging_amps"] if row else 0
+        current_amps = row[0] if row else 0
         logger.info(f"🔌 Corrente Tesla secondo il DB: {current_amps} A")
+        
+        azione_richiesta = None
+        amps_da_impostare = None
+
+        if energia_effettiva < soglia_minima:
+            if current_amps > 0:
+                azione_richiesta = "charge_stop"
+        else:
+            for amps in range(13, 4, -1):
+                soglia = amps * 220
+                if energia_effettiva >= soglia:
+                    if current_amps == 0:
+                        azione_richiesta = "charge_start"
+                        amps_da_impostare = amps
+                    elif current_amps != amps:
+                        azione_richiesta = "set_charging_amps"
+                        amps_da_impostare = amps
+                    break
+                
+                
+        if not azione_richiesta:
+            logger.info("✅ Nessuna azione necessaria: stato già coerente con l’energia disponibile.")
+            return
+            
+        # ⚡ Serve inviare un comando → verifica stato veicolo
+        tesla_data = await ensure_vehicle_awake()
+        if not tesla_data:
+            logger.warning("⚠️ Impossibile verificare stato Tesla. Comando annullato.")
+            return
+
+        # 🧠 Manda il comando appropriato
+        if azione_richiesta == "charge_stop":
+            result = await run_remote_command("charge_stop")
+            # parsing identico a prima...
+
+        elif azione_richiesta == "charge_start":
+            await run_remote_command("charge_start")
+            result = await run_remote_command("set_charging_amps", value=str(amps_da_impostare))
+            # parsing per set_charging_amps...
+
+        elif azione_richiesta == "set_charging_amps":
+            result = await run_remote_command("set_charging_amps", value=str(amps_da_impostare))
+            # parsing per set_charging_amps...      
 
     except mysql.connector.Error as e:
-        logger.error(f"❌ Errore MySQL nel recupero stato Tesla: {e}")
-        return
-
-    # ⚠️ Energia insufficiente → charge_stop se serve
-    if differenza < 5 * 220:
-        if current_amps == 0:
-            logger.info("🛑 Tesla già ferma, nessuna azione necessaria.")
-        else:
-            logger.info(f"⚠️ Energia insufficiente ({differenza:.2f} W), invio 'charge_stop'")
-            result = await run_remote_command("charge_stop")
-            if result:
-                inner = result.get("output", [{}])[0]
-                try:
-                    inner_data = json.loads(inner)
-                    resp = inner_data.get("response", {})
-                    if result["status"] == "success" and (
-                        resp.get("result") is True or 
-                        resp.get("string") == "car could not execute command: not_charging"
-                    ):
-                        cursor.execute("INSERT INTO tesla_status (charging_amps) VALUES (0)")
-                        conn.commit()
-                        logger.info("💾 Stato Tesla aggiornato nel DB (0 A).")
-                except Exception as e:
-                    logger.warning(f"⚠️ Errore parsing risposta comando stop: {e}")
+        logger.error(f"❌ Errore MySQL nel recupero o aggiornamento stato Tesla: {e}")
+    finally:
         cursor.close()
         conn.close()
-        return
 
-    # ⚡ Se energia disponibile → aggiorna solo se necessario
-    for amps in range(13, 4, -1):
-        soglia = amps * 220
-        if differenza >= soglia:
-            if current_amps == 0:
-                logger.info(f"🟢 Energia sufficiente, invio 'charge_start' + set a {amps} A")
-                await run_remote_command("charge_start")
-            elif current_amps == amps:
-                logger.info(f"✅ Amperaggio già impostato a {amps} A. Nessuna azione.")
-                break
 
-            logger.info(f"⚡ Energia disponibile, invio 'set_charging_amps' a {amps} A")
-            result = await run_remote_command("set_charging_amps", value=str(amps))
-            if result and result.get("status") == "success":
-                cursor.execute("INSERT INTO tesla_status (charging_amps) VALUES (%s)", (amps,))
-                conn.commit()
-                logger.info(f"💾 Stato Tesla aggiornato nel DB ({amps} A).")
-            break
 
-    cursor.close()
-    conn.close()
+def dati_recenti_valide(x_minuti_media_mobile=5, x_minuti_tesla_status=180):
+    try:
+        conn, cursor = get_db_connection()
+
+        # ✅ Verifica media mobile
+        cursor.execute("SELECT timestamp FROM log_media_mobile ORDER BY timestamp DESC LIMIT 1")
+        row_media = cursor.fetchone()
+        if not row_media:
+            return False, "Nessun dato presente in log_media_mobile"
+
+        ts_media = row_media[0]
+        if datetime.now() - ts_media > timedelta(minutes=x_minuti_media_mobile):
+            return False, f"Media mobile troppo vecchia: {ts_media}"
+
+        # ✅ Verifica stato Tesla
+        cursor.execute("SELECT timestamp FROM tesla_status ORDER BY timestamp DESC LIMIT 1")
+        row_tesla = cursor.fetchone()
+        if not row_tesla:
+            return False, "Nessun dato presente in tesla_status"
+
+        ts_tesla = row_tesla[0]
+        if datetime.now() - ts_tesla > timedelta(minutes=x_minuti_tesla_status):
+            return False, f"Stato Tesla troppo vecchio: {ts_tesla}"
+
+        return True, "Dati aggiornati"
+
+    except Exception as e:
+        return False, f"Errore durante la verifica: {e}"
+
 
 def get_last_logged_difference():
+    conn, cursor = get_db_connection()
+    if not conn:
+        return None
+
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "mysql"),
-            user=os.getenv("MYSQL_USER", "root"),
-            password=os.getenv("MYSQL_PASSWORD", "local"),
-            database=os.getenv("MYSQL_DATABASE", "dati")
-        )
-        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT differenza FROM log_media_mobile ORDER BY timestamp DESC LIMIT 1")
         row = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        row["differenza"] = 1200
-        return float(row["differenza"]) if row else None
+        return float(row[0]) if row else None
     except Exception as e:
         logger.error(f"❌ Errore nel recupero differenza dal DB: {e}")
         return None
-
-
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def insert_tesla_status(charging_amps: int):
+    conn, cursor = get_db_connection()
+    if not conn:
+        return
+
+    try:
+        cursor.execute("INSERT INTO tesla_status (charging_amps) VALUES (%s)", (charging_amps,))
+        conn.commit()
+        logger.info(f"📥 Stato Tesla registrato nel DB: charging_amps = {charging_amps}")
+    except Error as e:
+        logger.error(f"❌ Errore durante l'inserimento nel DB: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_db_connection(dictionary=False):
     try:
         conn = mysql.connector.connect(
             host=os.getenv("MYSQL_HOST", "mysql"),
@@ -609,14 +679,11 @@ def insert_tesla_status(charging_amps: int):
             password=os.getenv("MYSQL_PASSWORD", "local"),
             database=os.getenv("MYSQL_DATABASE", "dati")
         )
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO tesla_status (charging_amps) VALUES (%s)", (charging_amps,))
-        conn.commit()
-        logger.info(f"📥 Stato Tesla registrato nel DB: charging_amps = {charging_amps}")
-        cursor.close()
-        conn.close()
-    except Error as e:
-        logger.error(f"❌ Errore durante l'inserimento nel DB: {e}")
+        cursor = conn.cursor(dictionary=dictionary)
+        return conn, cursor
+    except mysql.connector.Error as e:
+        logger.error(f"❌ Errore connessione al DB: {e}")
+        return None, None
 
         
 if __name__ == '__main__':

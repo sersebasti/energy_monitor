@@ -5,7 +5,8 @@ import mysql.connector
 
 # Ottieni l'IP del dispositivo Shelly dalle variabili d'ambiente
 #SHELLY_IP = os.getenv("SHELLY_IP", "192.168.11.208")
-SHELLY_IP = "shelly_device"
+SHELLY_IP = os.getenv("SHELLY_IP", "shelly_device") 
+#SHELLY_IP = "shelly_device"
 
 def connect_to_db():
     """Crea la connessione al database MySQL."""
@@ -17,8 +18,10 @@ def connect_to_db():
     )
 
 def fetch_shelly_data():
-    """Interroga Shelly e ottiene i dati."""
+   
+
     url = f"http://{SHELLY_IP}/status"
+    print(f"Richiesta a Shelly: {url}")
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -54,6 +57,7 @@ def store_data_in_db(emeters):
     cursor.close()
     db.close()
     print("Dati Shelly salvati in una sola riga.")
+
 
 def main():
     """Ciclo che raccoglie i dati periodicamente."""

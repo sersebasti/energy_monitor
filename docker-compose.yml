@@ -7,10 +7,11 @@ services:
     ports:
       - "13306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: local
-      MYSQL_DATABASE: dati
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypassword
+      - TZ=Europe/Rome
+      - MYSQL_ROOT_PASSWORD=local
+      - MYSQL_DATABASE=dati
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
     volumes:
       - shelly_mysql_data:/var/lib/mysql
     restart: always
@@ -25,8 +26,9 @@ services:
     working_dir: /app
     command: /app/entrypoint.sh
     environment:
-      - SHELLY_IP=192.168.11.208  # IP del dispositivo Shelly locale
-      - MYSQL_HOST=shelly_mysql  # Cambia da shelly_mysql a 127.0.0.1 per host mode
+      - TZ=Europe/Rome
+      - SHELLY_IP=192.168.1.9
+      - MYSQL_HOST=shelly_mysql
       - MYSQL_USER=myuser
       - MYSQL_PASSWORD=mypassword
       - MYSQL_DATABASE=dati
@@ -43,6 +45,8 @@ services:
   shelly_grafana:
     image: grafana/grafana
     container_name: shelly_grafana_local
+    environment:
+      - TZ=Europe/Rome
     ports:
       - "13000:3000"
     volumes:
@@ -76,9 +80,10 @@ services:
       - ./flask:/app  # Monta la directory locale nel contenitore
 
     environment:
+      - TZ=Europe/Rome
       - CLIENT_SECRET=ta-secret.EIOXZ12%eEACq43R
       - FLASK_APP=app.py
-      - MYSQL_HOST=shelly_mysql  # Cambia da shelly_mysql a 127.0.0.1 per host mode
+      - MYSQL_HOST=shelly_mysql
       - MYSQL_USER=myuser
       - MYSQL_PASSWORD=mypassword
       - MYSQL_DATABASE=dati
@@ -87,7 +92,7 @@ services:
     networks:
       - shelly_monitoring
     extra_hosts:
-      - host.docker.internal:192.168.11.176   
+      - host.docker.internal:192.168.1.4   
     restart: always
     command: flask run --host=0.0.0.0 --port=5000 --reload
 
