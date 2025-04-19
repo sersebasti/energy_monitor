@@ -66,6 +66,8 @@ logger.addHandler(handler)
 
 logger.info("Logger configurato con rotazione giornaliera.")
 
+    
+
 def save_to_file(data, filename):
     """Salva i dati in un file JSON."""
     try:
@@ -160,6 +162,32 @@ def callback():
         logger.error("Eccezione catturata durante la gestione della richiesta.")
         logger.error(traceback.format_exc())
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/config_tesla', methods=['GET', 'POST'])
+def handle_config():
+    path = "/app/config.json"
+    
+    if request.method == 'GET':
+        with open(path) as f:
+            data = json.load(f)
+        return jsonify([
+            {"key": "MAX_ENERGY_PRELEVABILE", "value": data.get("MAX_ENERGY_PRELEVABILE", 0)},
+            {"key": "VIN", "value": data.get("VIN", "unknown")},
+            {"key": "REDIRECT_URI", "value": data.get("REDIRECT_URI", "unknown")}
+        ])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        if not data or 'MAX_ENERGY_PRELEVABILE' not in data:
+            return jsonify({"error": "Invalid data"}), 400
+        with open(path, 'r+') as f:
+            config = json.load(f)
+            config['MAX_ENERGY_PRELEVABILE'] = data['MAX_ENERGY_PRELEVABILE']
+            f.seek(0)
+            json.dump(config, f, indent=2)
+            f.truncate()
+        return jsonify({"status": "success"})
 
 
 def cleanup_old_files(directory, max_files=5, filter_func=None):
@@ -498,7 +526,7 @@ def log_last_power_data():
 async def check_and_charge_tesla():
     
     
-    ok, motivo = dati_recenti_valide(x_minuti_media_mobile=5, x_minuti_tesla_status=180)
+    ok, motivo = dati_recenti_valide(5,1440)
     if not ok:
         logger.warning(f"⛔ {motivo}. Provo a sistemare...")
 

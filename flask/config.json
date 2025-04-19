@@ -4,5 +4,5 @@
   "REDIRECT_URI": "https://flask.sersebasti.com/callback",
   "TOKEN_URL": "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
   "VIN": "LRW3E7FA9MC345603",
-  "MAX_ENERGY_PRELEVABILE":1200
+  "MAX_ENERGY_PRELEVABILE": 750
 }

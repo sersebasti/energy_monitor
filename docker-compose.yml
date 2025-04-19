@@ -47,10 +47,12 @@ services:
     container_name: shelly_grafana_local
     environment:
       - TZ=Europe/Rome
+      - GF_INSTALL_PLUGINS=speakyourcode-button-panel
     ports:
       - "13000:3000"
     volumes:
       - shelly_grafana_data:/var/lib/grafana
+      - ./flask/config.json:/etc/grafana/config.json 
     restart: always
     networks:
       - shelly_monitoring
