@@ -343,16 +343,37 @@ async def ensure_vehicle_awake(max_attempts=3, delay=10):
             else:
                 vehicle_name = response.get("vehicle_state", {}).get("vehicle_name")
                 charge_state = response.get("charge_state", {})
+
                 actual_current = charge_state.get("charger_actual_current")
                 port_latch = charge_state.get("charge_port_latch")
+                charging_state = charge_state.get("charging_state")
+                conn_cable = charge_state.get("conn_charge_cable")
 
-                # Log dettagliato con lo stato del cavo
+                # 🔌 Log dettagliato di tutti i parametri
+                logger.debug(f"🔧 Stato carica: current={actual_current}, latch={port_latch}, stato={charging_state}, cavo={conn_cable}")
+
+                # ✅ Scrive sempre il dato su DB se disponibile
+                if actual_current is not None:
+                    try:
+                        insert_tesla_status(charging_amps=int(actual_current))
+                        logger.info(f"💾 Stato Tesla salvato nel DB: {actual_current} A")
+                    except Exception as e:
+                        logger.error(f"❌ Errore salvataggio nel DB: {e}")
+
+                # ✅ Nuovo criterio per determinare se il cavo è collegato
+                cavo_collegato = (
+                    port_latch == "Engaged" and
+                    charging_state != "Disconnected" and
+                    conn_cable != "<invalid>"
+                )
+
+                # ℹ️ Log riassuntivo
                 if vehicle_name is not None and actual_current is not None:
-                    cable_status = "collegato ✅" if port_latch == "Engaged" else "non collegato ❌"
+                    cable_status = "collegato ✅" if cavo_collegato else "non collegato ❌"
                     logger.info(f"✅ Veicolo online: nome = {vehicle_name}, corrente = {actual_current} A, cavo = {cable_status}")
 
-                    if port_latch != "Engaged":
-                        logger.warning("🔌 Cavo non collegato! Nessuna ricarica possibile.")
+                    if not cavo_collegato:
+                        logger.warning("🔌 Cavo non collegato correttamente! Nessuna ricarica possibile.")
                         return None
 
                     return data
