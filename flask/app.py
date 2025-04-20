@@ -645,7 +645,14 @@ async def check_and_charge_tesla():
                 
         if not azione_richiesta:
             logger.info("✅ Nessuna azione necessaria: stato già coerente con l’energia disponibile.")
+            try:
+                insert_tesla_status(charging_amps=int(current_amps))
+                logger.info(f"💾 Stato Tesla salvato comunque nel DB: {current_amps} A")
+            except Exception as e:
+                logger.error(f"❌ Errore salvataggio corrente nel DB: {e}")
             return
+        
+        
             
         # ⚡ Serve inviare un comando → verifica stato veicolo
         tesla_data = await ensure_vehicle_awake()
