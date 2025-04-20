@@ -16,7 +16,8 @@ from flask import Flask, request, jsonify, Response
 from datetime import datetime
 from mysql.connector import Error # type: ignore
 from datetime import datetime, timedelta
-
+from flask_cors import CORS
+from flask_cors import cross_origin
 
 app = Flask(__name__)
 
@@ -167,27 +168,44 @@ def callback():
 @app.route('/config_tesla', methods=['GET', 'POST'])
 def handle_config():
     path = "/app/config.json"
-    
+
     if request.method == 'GET':
         with open(path) as f:
-            data = json.load(f)
-        return jsonify([
-            {"key": "MAX_ENERGY_PRELEVABILE", "value": data.get("MAX_ENERGY_PRELEVABILE", 0)},
-            {"key": "VIN", "value": data.get("VIN", "unknown")},
-            {"key": "REDIRECT_URI", "value": data.get("REDIRECT_URI", "unknown")}
-        ])
-    
-    elif request.method == 'POST':
-        data = request.get_json()
-        if not data or 'MAX_ENERGY_PRELEVABILE' not in data:
-            return jsonify({"error": "Invalid data"}), 400
-        with open(path, 'r+') as f:
             config = json.load(f)
-            config['MAX_ENERGY_PRELEVABILE'] = data['MAX_ENERGY_PRELEVABILE']
-            f.seek(0)
-            json.dump(config, f, indent=2)
-            f.truncate()
-        return jsonify({"status": "success"})
+
+        # Restituisce tutte le chiavi come lista di dizionari {key, value}
+        return jsonify([{"key": k, "value": v} for k, v in config.items()])
+
+
+
+@app.route('/set_max_energy', methods=['GET'])
+@cross_origin()
+def config_tesla_get():
+    key = request.args.get('key')
+    value = request.args.get('value')
+    token = request.args.get('token')
+
+    if token != "27I6hQ5aW20v":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    if not key or not value:
+        return jsonify({"error": "Missing key or value"}), 400
+
+    # Leggi il file JSON esistente
+    try:
+        with open(config_path, "r") as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        config = {}
+
+    # Aggiorna il valore
+    config[key] = value
+
+    # Salva il file aggiornato
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=2)
+
+    return jsonify({"status": "success", "updated": {key: value}})
 
 
 def cleanup_old_files(directory, max_files=5, filter_func=None):
@@ -556,7 +574,7 @@ async def check_and_charge_tesla():
                 logger.error(f"❌ Errore nel tentativo di risvegliare la Tesla: {e}")
 
     # 🔁 Seconda verifica dopo i tentativi
-    ok2, motivo2 = dati_recenti_valide(x_minuti_media_mobile=5, x_minuti_tesla_status=180)
+    ok2, motivo2 = dati_recenti_valide(5, x_minuti_tesla_status=1440)
     if not ok2:
         logger.warning(f"⛔ Dati ancora non recenti: {motivo2}. Annullato invio comandi alla Tesla.")
         return
@@ -635,8 +653,51 @@ async def check_and_charge_tesla():
         conn.close()
 
 
+async def safety_check_tesla():
+    logger.info("🔁 Avvio controllo di sicurezza Tesla...")
 
-def dati_recenti_valide(x_minuti_media_mobile=5, x_minuti_tesla_status=180):
+    differenza = get_last_logged_difference()
+    if differenza is None:
+        logger.warning("⚠️ Differenza non disponibile, controllo annullato.")
+        return
+
+    logger.info(f"📊 Differenza energetica più recente: {differenza:.2f} W")
+
+    max_fissa = 3000
+    soglia_minima = 5 * 220
+    energia_effettiva = differenza + max_fissa
+
+    logger.info(f"🔧 Energia effettiva simulata con MAX fisso ({max_fissa} W): {energia_effettiva:.2f} W")
+    logger.info(f"🔒 Soglia minima di sicurezza: {soglia_minima} W")
+
+    conn, cursor = get_db_connection()
+    if not conn:
+        logger.error("❌ Connessione al database fallita.")
+        return
+
+    try:
+        cursor.execute("SELECT charging_amps FROM tesla_status ORDER BY timestamp DESC LIMIT 1")
+        row = cursor.fetchone()
+        current_amps = row[0] if row else 0
+
+        logger.info(f"🔌 Corrente Tesla attuale: {current_amps} A")
+
+        if energia_effettiva < soglia_minima and current_amps > 0:
+            logger.warning("⚡ Energia insufficiente, invio comando STOP alla Tesla.")
+            await run_remote_command("charge_stop")
+        else:
+            logger.info("✅ Nessuna azione necessaria. Condizioni sicure.")
+    except mysql.connector.Error as e:
+        logger.error(f"❌ Errore MySQL durante il controllo di sicurezza: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+def dati_recenti_valide(x_minuti_media_mobile, x_minuti_tesla_status):
+    logger.info(f"min mobile: {x_minuti_media_mobile}")
+    logger.info(f"min tesla: {x_minuti_tesla_status}")
     try:
         conn, cursor = get_db_connection()
 

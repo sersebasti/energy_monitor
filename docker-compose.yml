@@ -48,6 +48,7 @@ services:
     environment:
       - TZ=Europe/Rome
       - GF_INSTALL_PLUGINS=speakyourcode-button-panel
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=speakyourcode-button-panel
     ports:
       - "13000:3000"
     volumes:
