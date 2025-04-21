@@ -37,6 +37,7 @@ REDIRECT_URI = CONFIG["REDIRECT_URI"]
 TOKEN_URL = CONFIG["TOKEN_URL"]
 VIN = CONFIG["VIN"]
 MAX_ENERGY_PRELEVABILE = CONFIG["MAX_ENERGY_PRELEVABILE"]
+STATE = CONFIG["STATE"]
     
 # Verifica se la directory esiste, altrimenti la crea
 log_directory = "/app/logs"
@@ -178,7 +179,7 @@ def handle_config():
 
 
 
-@app.route('/set_max_energy', methods=['GET'])
+@app.route('/set_config', methods=['GET'])
 @cross_origin()
 def config_tesla_get():
     key = request.args.get('key')
@@ -296,103 +297,6 @@ def get_access_token_from_file():
     except Exception as e:
         logger.error(f"❌ Errore lettura token da file: {e}")
     return None
-
-
-async def get_vehicle_data():
-    token = get_access_token_from_file()
-    if not token:
-        logger.error("❌ Token non disponibile. Impossibile fare richiesta a Tesla.")
-        return None
-
-    url = "https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/vehicles/LRW3E7FA9MC345603/vehicle_data"
-    headers = {"Authorization": f"Bearer {token}"}
-    #logger.debug(f"🔑 Access token (inizio): {token[:40]}...")
-
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url, headers=headers) as resp:
-                status = resp.status
-                text = await resp.text()
-
-                logger.info(f"📡 Risposta HTTP: {status}")
-                #logger.debug(f"📥 Contenuto completo (raw):\n{text}")
-
-                try:
-                    json_data = json.loads(text)
-                    #logger.debug(f"📦 JSON decodificato:\n{json.dumps(json_data, indent=2)}")
-                    return json_data
-                except json.JSONDecodeError as e:
-                    logger.error(f"❌ Errore nel parsing JSON: {e}")
-                    return None
-
-        except Exception as e:
-            logger.error(f"❌ Errore richiesta HTTP verso Tesla: {e}")
-            return None
-
-
-async def ensure_vehicle_awake(max_attempts=3, delay=10):
-    for attempt in range(1, max_attempts + 1):
-        logger.info(f"🔍 Tentativo {attempt}/{max_attempts} per ottenere dati dal veicolo...")
-        data = await get_vehicle_data()
-
-        if data and isinstance(data, dict):
-            response = data.get("response")
-            if not response or not isinstance(response, dict):
-                logger.warning("⚠️ 'response' non trovato o non valido nella risposta dell'API.")
-                logger.debug(f"📦 Risposta grezza ricevuta: {data}")
-            else:
-                vehicle_name = response.get("vehicle_state", {}).get("vehicle_name")
-                charge_state = response.get("charge_state", {})
-
-                actual_current = charge_state.get("charger_actual_current")
-                port_latch = charge_state.get("charge_port_latch")
-                charging_state = charge_state.get("charging_state")
-                conn_cable = charge_state.get("conn_charge_cable")
-
-                # 🔌 Log dettagliato di tutti i parametri
-                logger.debug(f"🔧 Stato carica: current={actual_current}, latch={port_latch}, stato={charging_state}, cavo={conn_cable}")
-
-                # ✅ Scrive sempre il dato su DB se disponibile
-                if actual_current is not None:
-                    try:
-                        insert_tesla_status(charging_amps=int(actual_current))
-                        logger.info(f"💾 Stato Tesla salvato nel DB: {actual_current} A")
-                    except Exception as e:
-                        logger.error(f"❌ Errore salvataggio nel DB: {e}")
-
-                # ✅ Nuovo criterio per determinare se il cavo è collegato
-                cavo_collegato = (
-                    port_latch == "Engaged" and
-                    charging_state != "Disconnected" and
-                    conn_cable != "<invalid>"
-                )
-
-                # ℹ️ Log riassuntivo
-                if vehicle_name is not None and actual_current is not None:
-                    cable_status = "collegato ✅" if cavo_collegato else "non collegato ❌"
-                    logger.info(f"✅ Veicolo online: nome = {vehicle_name}, corrente = {actual_current} A, cavo = {cable_status}")
-
-                    if not cavo_collegato:
-                        logger.warning("🔌 Cavo non collegato correttamente! Nessuna ricarica possibile.")
-                        return None
-
-                    return data
-                else:
-                    logger.debug(f"🕵️‍♂️ Dati ricevuti ma incompleti. Nome: {vehicle_name}, Corrente: {actual_current}, Latch: {port_latch}")
-        else:
-            logger.warning("⚠️ Nessuna risposta valida dal veicolo.")
-            logger.debug(f"📦 Risposta grezza ricevuta: {data}")
-
-        if attempt < max_attempts:
-            logger.info("🚨 Invio comando 'wake_up' via SSH...")
-            await run_remote_command("wake_up")
-            await asyncio.sleep(delay)
-        else:
-            logger.error("❌ Tentativi esauriti. Impossibile ottenere dati dal veicolo.")
-            return None
-
-
-
 
 async def run_remote_command(command="wake_up", value=None, retry_on_fail=True):
     remote_cmd = f'php /home/sergio/Scrivania/docker/shelly_monitoring/tesla-proxy-scripts/tesla_commands.php {command}'
@@ -564,43 +468,18 @@ def log_last_power_data():
 
 async def check_and_charge_tesla():
     
-    
-    ok, motivo = dati_recenti_valide(5,1440)
-    if not ok:
-        logger.warning(f"⛔ {motivo}. Provo a sistemare...")
-
-        if "media mobile" in motivo.lower():
-            try:
-                aggiorna_log_media_mobile()
-                logger.info("📈 Aggiornamento media mobile eseguito.")
-            except Exception as e:
-                logger.error(f"❌ Errore aggiornamento media mobile: {e}")
-
-        if "tesla" in motivo.lower():
-            try:
-                data = await ensure_vehicle_awake()
-
-                if data:
-                    response = data.get("response", {})
-                    charge_state = response.get("charge_state", {})
-                    actual_current = charge_state.get("charger_actual_current", 0)
-
-                    # 💾 Scrive corrente nel DB
-                    insert_tesla_status(charging_amps=int(actual_current))
-                    logger.info(f"💾 Stato Tesla aggiornato da ensure_vehicle_awake(): {actual_current} A")
-                else:
-                    logger.warning("⚠️ ensure_vehicle_awake() non ha restituito dati validi.")
-
-            except Exception as e:
-                logger.error(f"❌ Errore nel tentativo di risvegliare la Tesla: {e}")
-
-    # 🔁 Seconda verifica dopo i tentativi
-    ok2, motivo2 = dati_recenti_valide(5, x_minuti_tesla_status=1440)
-    if not ok2:
-        logger.warning(f"⛔ Dati ancora non recenti: {motivo2}. Annullato invio comandi alla Tesla.")
+    if STATE.upper() != "ON":
+        logger.info("🚫 Stato = OFF. Ricarica disattivata. Nessun comando verrà inviato.")
         return
-
-
+    
+    
+    esito, messaggio = await validate_execution(x_minuti_media_mobile=5)
+    logger.info(f"Validazione: {messaggio}")
+    if not esito:
+        logger.warning("⛔ Validazione fallita. Blocco dell’esecuzione.")
+        return
+  
+    
     differenza = get_last_logged_difference()
     if differenza is None:
         logger.warning("⚠️ Differenza non calcolabile dal DB, nessuna azione eseguita.")
@@ -681,6 +560,197 @@ async def check_and_charge_tesla():
         conn.close()
 
 
+async def validate_execution(x_minuti_media_mobile):
+    logger.info(f"min mobile: {x_minuti_media_mobile}")
+  
+    try:
+        conn, cursor = get_db_connection()
+
+        # ✅ Verifica media mobile
+        cursor.execute("SELECT timestamp FROM log_media_mobile ORDER BY timestamp DESC LIMIT 1")
+        row_media = cursor.fetchone()
+        if not row_media:
+            return False, "Nessun dato presente in log_media_mobile"
+
+        ts_media = row_media[0]
+        if datetime.now() - ts_media > timedelta(minutes=x_minuti_media_mobile):
+            return False, f"Media mobile troppo vecchia: {ts_media}"
+
+
+        data = await ensure_vehicle_awake()
+        if not data:
+            return False, "❌ Veicolo non pronto o cavo non collegato"
+
+        return True, "✅ Tutto ok: media mobile aggiornata e veicolo pronto"
+
+    except Exception as e:
+        return False, f"❌ Errore durante la verifica: {e}"
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+async def ensure_vehicle_awake(max_attempts=3, delay=10):
+    for attempt in range(1, max_attempts + 1):
+        logger.info(f"🔍 Tentativo {attempt}/{max_attempts} per ottenere dati dal veicolo...")
+        data = await get_vehicle_data()
+
+        if data and isinstance(data, dict):
+            response = data.get("response")
+            if not response or not isinstance(response, dict):
+                logger.warning("⚠️ 'response' non trovato o non valido nella risposta dell'API.")
+                logger.debug(f"📦 Risposta grezza ricevuta: {data}")
+            else:
+                vehicle_name = response.get("vehicle_state", {}).get("vehicle_name")
+                drive_state = response.get("drive_state", {})
+                charge_state = response.get("charge_state", {})
+
+                actual_current = charge_state.get("charger_actual_current")
+                port_latch = charge_state.get("charge_port_latch")
+                charging_state = charge_state.get("charging_state")
+                conn_cable = charge_state.get("conn_charge_cable")
+                battery_level = charge_state.get("battery_level")
+
+                latitude = drive_state.get("latitude")
+                longitude = drive_state.get("longitude")
+
+                # 🔌 Log dettagliato di tutti i parametri
+                logger.debug(f"🔧 Stato carica: current={actual_current}, latch={port_latch}, stato={charging_state}, cavo={conn_cable}, batteria={battery_level}%, lat={latitude}, lon={longitude}")
+
+                # ✅ Scrive sempre il dato nel DB
+                if actual_current is not None:
+                    try:
+                        insert_tesla_status(
+                            charging_amps=int(actual_current),
+                            latitude=latitude,
+                            longitude=longitude,
+                            battery_level=battery_level
+                        )
+                        logger.info(f"💾 Stato Tesla salvato nel DB: {actual_current} A, batteria: {battery_level}%, posizione: ({latitude}, {longitude})")
+                    except Exception as e:
+                        logger.error(f"❌ Errore salvataggio nel DB: {e}")
+
+                # ✅ Criterio completo per cavo collegato
+                cavo_collegato = (
+                    port_latch == "Engaged" and
+                    charging_state != "Disconnected" and
+                    conn_cable != "<invalid>"
+                )
+
+                # ℹ️ Log riassuntivo
+                if vehicle_name is not None and actual_current is not None:
+                    cable_status = "collegato ✅" if cavo_collegato else "non collegato ❌"
+                    logger.info(f"✅ Veicolo online: nome = {vehicle_name}, corrente = {actual_current} A, cavo = {cable_status}")
+
+                    if not cavo_collegato:
+                        logger.warning("🔌 Cavo non collegato correttamente! Nessuna ricarica possibile.")
+                        return None
+
+                    return data
+                else:
+                    logger.debug(f"🕵️‍♂️ Dati ricevuti ma incompleti. Nome: {vehicle_name}, Corrente: {actual_current}, Latch: {port_latch}")
+        else:
+            logger.warning("⚠️ Nessuna risposta valida dal veicolo.")
+            logger.debug(f"📦 Risposta grezza ricevuta: {data}")
+
+        if attempt < max_attempts:
+            logger.info("🚨 Invio comando 'wake_up' via SSH...")
+            await run_remote_command("wake_up")
+            await asyncio.sleep(delay)
+        else:
+            logger.error("❌ Tentativi esauriti. Impossibile ottenere dati dal veicolo.")
+            return None
+
+
+async def get_vehicle_data():
+    token = get_access_token_from_file()
+    if not token:
+        logger.error("❌ Token non disponibile. Impossibile fare richiesta a Tesla.")
+        return None
+
+    url = "https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/vehicles/LRW3E7FA9MC345603/vehicle_data"
+    headers = {"Authorization": f"Bearer {token}"}
+    #logger.debug(f"🔑 Access token (inizio): {token[:40]}...")
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, headers=headers) as resp:
+                status = resp.status
+                text = await resp.text()
+
+                logger.info(f"📡 Risposta HTTP: {status}")
+                #logger.debug(f"📥 Contenuto completo (raw):\n{text}")
+
+                try:
+                    json_data = json.loads(text)
+                    #logger.debug(f"📦 JSON decodificato:\n{json.dumps(json_data, indent=2)}")
+                    return json_data
+                except json.JSONDecodeError as e:
+                    logger.error(f"❌ Errore nel parsing JSON: {e}")
+                    return None
+
+        except Exception as e:
+            logger.error(f"❌ Errore richiesta HTTP verso Tesla: {e}")
+            return None
+
+def get_last_logged_difference():
+    conn, cursor = get_db_connection()
+    if not conn:
+        return None
+
+    try:
+        cursor.execute("SELECT differenza FROM log_media_mobile ORDER BY timestamp DESC LIMIT 1")
+        row = cursor.fetchone()
+        return float(row[0]) if row else None
+    except Exception as e:
+        logger.error(f"❌ Errore nel recupero differenza dal DB: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def insert_tesla_status(charging_amps: int, latitude: float = None, longitude: float = None, battery_level: int = None):
+    conn, cursor = get_db_connection()
+    if not conn:
+        return
+
+    try:
+        # Costruzione dinamica della query
+        columns = ["charging_amps"]
+        values = [charging_amps]
+        placeholders = ["%s"]
+
+        if latitude is not None:
+            columns.append("latitude")
+            values.append(latitude)
+            placeholders.append("%s")
+
+        if longitude is not None:
+            columns.append("longitude")
+            values.append(longitude)
+            placeholders.append("%s")
+
+        if battery_level is not None:
+            columns.append("battery_level")
+            values.append(battery_level)
+            placeholders.append("%s")
+
+        query = f"INSERT INTO tesla_status ({', '.join(columns)}) VALUES ({', '.join(placeholders)})"
+        cursor.execute(query, values)
+        conn.commit()
+
+        logger.info(f"📥 Stato Tesla registrato nel DB: {dict(zip(columns, values))}")
+    except Error as e:
+        logger.error(f"❌ Errore durante l'inserimento nel DB: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
 async def safety_check_tesla():
     logger.info("🔁 Avvio controllo di sicurezza Tesla...")
 
@@ -720,73 +790,6 @@ async def safety_check_tesla():
     finally:
         cursor.close()
         conn.close()
-
-
-
-def dati_recenti_valide(x_minuti_media_mobile, x_minuti_tesla_status):
-    logger.info(f"min mobile: {x_minuti_media_mobile}")
-    logger.info(f"min tesla: {x_minuti_tesla_status}")
-    try:
-        conn, cursor = get_db_connection()
-
-        # ✅ Verifica media mobile
-        cursor.execute("SELECT timestamp FROM log_media_mobile ORDER BY timestamp DESC LIMIT 1")
-        row_media = cursor.fetchone()
-        if not row_media:
-            return False, "Nessun dato presente in log_media_mobile"
-
-        ts_media = row_media[0]
-        if datetime.now() - ts_media > timedelta(minutes=x_minuti_media_mobile):
-            return False, f"Media mobile troppo vecchia: {ts_media}"
-
-        # ✅ Verifica stato Tesla
-        cursor.execute("SELECT timestamp FROM tesla_status ORDER BY timestamp DESC LIMIT 1")
-        row_tesla = cursor.fetchone()
-        if not row_tesla:
-            return False, "Nessun dato presente in tesla_status"
-
-        ts_tesla = row_tesla[0]
-        if datetime.now() - ts_tesla > timedelta(minutes=x_minuti_tesla_status):
-            return False, f"Stato Tesla troppo vecchio: {ts_tesla}"
-
-        return True, "Dati aggiornati"
-
-    except Exception as e:
-        return False, f"Errore durante la verifica: {e}"
-
-
-def get_last_logged_difference():
-    conn, cursor = get_db_connection()
-    if not conn:
-        return None
-
-    try:
-        cursor.execute("SELECT differenza FROM log_media_mobile ORDER BY timestamp DESC LIMIT 1")
-        row = cursor.fetchone()
-        return float(row[0]) if row else None
-    except Exception as e:
-        logger.error(f"❌ Errore nel recupero differenza dal DB: {e}")
-        return None
-    finally:
-        cursor.close()
-        conn.close()
-
-
-def insert_tesla_status(charging_amps: int):
-    conn, cursor = get_db_connection()
-    if not conn:
-        return
-
-    try:
-        cursor.execute("INSERT INTO tesla_status (charging_amps) VALUES (%s)", (charging_amps,))
-        conn.commit()
-        logger.info(f"📥 Stato Tesla registrato nel DB: charging_amps = {charging_amps}")
-    except Error as e:
-        logger.error(f"❌ Errore durante l'inserimento nel DB: {e}")
-    finally:
-        cursor.close()
-        conn.close()
-
 
 def get_db_connection(dictionary=False):
     try:
