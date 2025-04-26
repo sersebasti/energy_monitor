@@ -473,14 +473,24 @@ def log_last_power_data():
 
 async def check_and_charge_tesla():
     
+    logger.info("🔁 Avvio controllo Tesla...")
+    
+    verify_and_update_shelly_ip()
+    emeters = fetch_shelly_data()
+    if emeters:
+        store_data_in_db(emeters)
+        logger.info("✅ Dati Shelly salvati correttamente.")
+    else:
+        logger.warning("⚠️ Dati Shelly non disponibili.")
+
+    aggiorna_log_media_mobile(5)
+
     current_minute = datetime.now().minute
     if current_minute not in [0, 15, 30, 45]:
-        logger.info(f"⏱ Minuto {current_minute}: esecuzione parziale.")
-        aggiorna_log_media_mobile(5)
-        verify_and_update_shelly_ip()
+        logger.info(f"⏱ Minuto {current_minute}: effettuata esecuzione parziale.")
         return
     else:
-        logger.info(f"⏱ Minuto {current_minute}: esecuzione completa.")
+        logger.info(f"⏱ Minuto {current_minute}: provcedo con esecuzione completa.")
     
     
     if STATE.upper() != "ON":
@@ -845,6 +855,71 @@ async def safety_check_tesla():
     finally:
         cursor.close()
         conn.close()
+
+
+
+def fetch_shelly_data():
+   
+    if not SHELLY_IP:
+        logger.error("❌ Indirizzo IP di Shelly non configurato.")
+        return None 
+    
+    url = f"http://{SHELLY_IP}/status"
+    logger.info(f"Richiesta a Shelly: {url}")
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        logger.info(f"Risposta Shelly: {response.status_code}")
+        #logger.debug(f"Risposta Shelly: {data}")
+        
+        return data.get("emeters", [])  # Estratto direttamente dalla API locale
+    except requests.RequestException as e:
+        logger.error(f"Errore nella richiesta a Shelly: {e}")
+        return None
+
+def store_data_in_db(emeters):
+    #Salva i dati di tutte le fasi in un'unica riga nel database MySQL.
+    logger.info("Salvataggio dati Shelly nel DB...")
+    #logger.debug(f"Dati Shelly: {emeters}")
+    if not emeters: 
+        logger.warning("⚠️ Nessun dato Shelly disponibile per il salvataggio.")
+        return None
+    
+    # Connessione al database
+    conn, cursor = get_db_connection()
+    if not conn:
+        logger.error("❌ Connessione al database fallita.")
+        return None
+    
+    
+    try:
+        query = """
+            INSERT INTO shelly_emeters (timestamp, 
+                                        power_1, pf_1, current_1, voltage_1, total_1, total_returned_1,
+                                        power_2, pf_2, current_2, voltage_2, total_2, total_returned_2,
+                                        power_3, pf_3, current_3, voltage_3, total_3, total_returned_3)
+            VALUES (NOW(), %s, %s, %s, %s, %s, %s, 
+                        %s, %s, %s, %s, %s, %s, 
+                        %s, %s, %s, %s, %s, %s)
+        """
+
+        # Prende i valori delle tre fasi (o mette 0 se non disponibili)
+        values = []
+        for i in range(3):
+            emeter = emeters[i] if i < len(emeters) else {"power": 0, "pf": 0, "current": 0, "voltage": 0, "total": 0, "total_returned": 0}
+            values.extend([emeter["power"], emeter["pf"], emeter["current"], emeter["voltage"], emeter["total"], emeter["total_returned"]])
+
+        cursor.execute(query, tuple(values))
+        logger.info("✅ Dati Shelly inseriti correttamente nel DB.")
+    except Exception as e:
+        logger.error(f"❌ Errore durante l'inserimento dei dati Shelly: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
+    
 
 def get_db_connection(dictionary=False):
     try:
