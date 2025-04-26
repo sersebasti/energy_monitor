@@ -17,8 +17,8 @@ from flask import Flask, request, jsonify, Response
 from datetime import datetime
 from mysql.connector import Error # type: ignore
 from datetime import datetime, timedelta
-#from flask_cors import CORS # type: ignore
-#from flask_cors import cross_origin # type: ignore
+from flask_cors import CORS # type: ignore
+from flask_cors import cross_origin # type: ignore
 #from scapy.all import ARP, Ether, srp # type: ignore
 
 
@@ -185,7 +185,7 @@ def handle_config():
 
 
 @app.route('/set_config', methods=['GET'])
-#@cross_origin()
+@cross_origin()
 def config_tesla_get():
     key = request.args.get('key')
     value = request.args.get('value')
@@ -487,10 +487,12 @@ async def check_and_charge_tesla():
 
     current_minute = datetime.now().minute
     if current_minute not in [0, 15, 30, 45]:
-        logger.info(f"⏱ Minuto {current_minute}: effettuata esecuzione parziale.")
-        return
+        logger.info(f"⏱ Minuto {current_minute}: effettuo esecuzione parziale.")
+        partial_execution = True
     else:
         logger.info(f"⏱ Minuto {current_minute}: provcedo con esecuzione completa.")
+        partial_execution = False
+           
     
     
     if STATE.upper() != "ON":
@@ -527,8 +529,10 @@ async def check_and_charge_tesla():
         return
 
     logger.info(f"📊 Differenza energetica più recente: {differenza:.2f} W")
-
+    
     max_energy_prelevabile = float(MAX_ENERGY_PRELEVABILE)
+    
+    
     logger.info(f"🔧 max_energy_prelevabile configurato: {max_energy_prelevabile} W")
 
     soglia_minima = 5 * 220
@@ -538,7 +542,7 @@ async def check_and_charge_tesla():
     if not conn:
         return
 
-    try:
+    try:            
         cursor.execute("SELECT charging_amps FROM tesla_status ORDER BY timestamp DESC LIMIT 1")
         row = cursor.fetchone()
         current_amps = row[0] if row else 0
@@ -547,6 +551,16 @@ async def check_and_charge_tesla():
         azione_richiesta = None
         amps_da_impostare = None
 
+        if partial_execution:
+            assorbimento_totale = differenza - current_amps * 220
+            logger.info(f"stato assobimento attuale: {assorbimento_totale}")
+            if assorbimento_totale < -3000:
+                logger.info(f"⚡ Assorbimento totale < -3000: {assorbimento_totale}, invio comando charge_stop.")
+                await run_remote_command("charge_start") 
+            else:
+                logger.info(f"✅ Assorbimento totale >= -3000: {assorbimento_totale}, nessuna azione necessaria.")
+            return
+                
         if energia_effettiva < soglia_minima:
             if current_amps > 0:
                 azione_richiesta = "charge_stop"
@@ -815,7 +829,7 @@ def insert_tesla_status(charging_amps: int, latitude: float = None, longitude: f
         cursor.close()
         conn.close()
 
-
+'''
 async def safety_check_tesla():
     logger.info("🔁 Avvio controllo di sicurezza Tesla...")
 
@@ -855,7 +869,7 @@ async def safety_check_tesla():
     finally:
         cursor.close()
         conn.close()
-
+'''
 
 
 def fetch_shelly_data():
@@ -879,7 +893,7 @@ def fetch_shelly_data():
         return None
 
 def store_data_in_db(emeters):
-    logger.debug(f"Emeters Shelly: {emeters}")
+    #logger.debug(f"Emeters Shelly: {emeters}")
     
     #Salva i dati di tutte le fasi in un'unica riga nel database MySQL.
     logger.info("Salvataggio dati Shelly nel DB...")
@@ -914,7 +928,7 @@ def store_data_in_db(emeters):
             emeter = emeters[i] if i < len(emeters) else {"power": 0, "pf": 0, "current": 0, "voltage": 0, "total": 0, "total_returned": 0}
             values.extend([emeter["power"], emeter["pf"], emeter["current"], emeter["voltage"], emeter["total"], emeter["total_returned"]])
         
-        logger.debug(f"Query: {query}")
+        #logger.debug(f"Query: {query}")
         
         cursor.execute(query, tuple(values))
         conn.commit()

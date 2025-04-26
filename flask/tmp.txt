@@ -10,3 +10,78 @@ https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/vehicles/LRW3E7FA9MC345603
     "error_description": "",
     "txid": "f61c755e520cb558baa53d1c1ef57131"
 }
+
+
+Oggetto: Comunicazione installazione presa 16A e aggiornamento piano antincendio seminterrato
+
+Buongiorno Massimo,
+
+innanzitutto ti ringrazio per avermi fatto giustamente notare che qualsiasi variazione, anche minima, richiede una valutazione di impatto ai fini del piano antincendio del seminterrato.
+Sinceramente non avevo considerato questo aspetto e ti ringrazio ancora per la tua attenzione.
+
+Ci ho riflettuto e  aggiorno brevemente sui punti principali, poi insettiman provo a chiamreti al telefono:
+
+1. Considerazioen generale di buion senzo: sicurezza della mia auto elettrica
+
+Qualora a qualcuno dei condomini sorgesse il dubbio che la ricarica della mia auto elettrica nel seminterrato possa aumentare il rischio incendio, ti chiedo cortesemente di rassicurarli quanto più possibile.
+
+La mia auto monta batterie al litio ferro fosfato (LiFePO₄), una tecnologia intrinsecamente non incendiabile, riconosciuta per la sua elevata sicurezza.
+Al di là di tutte le normative vigenti, desidero sottolineare che, personalmente, mi sento assolutamente tranquillo riguardo alla sicurezza della mia auto, altriment on la avrei comprata.
+
+
+2. Diritto alla ricarica di auto elettriche
+
+Ti informo che, a prescindere da quanto detto sopra, sulla base di quanto previsto dall'articolo 1102 del Codice Civile (uso delle parti comuni), intendo procedere alla predisposizione di una presa CEE blu 16A nello spazio seminterrato di mia proprietà.
+
+Sarà poi mia responsabilità successiva gestire la modalità di utilizzo della presa, nel rispetto delle normative vigenti, che ad oggi, per quanto ho compreso, in riferimento all'attività di ricarica dei veicoli elettrici, sono disciplinate anche dal Decreto Legislativo 3 marzo 2011, n. 28 (promozione delle infrastrutture di ricarica per veicoli elettrici), nonché dalle eventuali esigenze condominiali, laddove previsto.
+
+
+
+
+
+Pertanto ho preparato questa comunicazione destinata ai Vigili del Fuoco.
+Se preferisci, puoi inoltrarla tu direttamente; in alternativa, sono instenzionato a inviarla personalmente.
+
+Oggetto: Installazione presa industriale CEE blu 2P+T 230V 16A presso box auto condominiale
+
+Spettabile Comando,
+
+con la presente comunico che è previsto l'intervento di installazione di una presa industriale CEE blu 2P+T 230V 16A all'interno del box auto di proprietà esclusiva sito nel seminterrato del Condominio "Molino di Gora" in [Inserire indirizzo completo].
+
+L'intervento consiste nella posa di:
+
+    Presa CEE blu 16A su parete interna del box;
+
+    Collegamento elettrico al quadro generale privato dell'unità immobiliare di proprietà del sottoscritto [oppure: "di [Nome Proprietario]"].
+
+L'impianto sarà realizzato da tecnico abilitato ai sensi del D.M. 37/08, e comprenderà:
+
+    Protezione differenziale ad alta sensibilità (30 mA);
+
+    Protezione magnetotermica dedicata (16A);
+
+    Cablaggio idoneo conforme alle normative vigenti CEI 64-8.
+
+L'intervento:
+
+    Non comporta modifiche strutturali alle parti edilizie del box o del condominio;
+
+    Non altera le vie di esodo dell'autorimessa;
+
+    Non modifica impianti condominiali comuni o sistemi di protezione antincendio esistenti;
+
+    Non comporta aumento significativo del rischio incendio.
+
+La potenza impegnata sarà limitata a circa 3,7 kW monofase (16A – 230V).
+
+Al termine dei lavori sarà rilasciata regolare Dichiarazione di Conformità dell’impianto ai sensi del D.M. 37/08.
+
+Resto a disposizione per eventuali chiarimenti o integrazioni.
+
+Cordiali saluti,
+[Tuo Nome e Cognome]
+[Recapito telefonico]
+[Email]
+
+Resto a disposizione per eventuali ulteriori documentazioni o integrazioni che ritenessi utili.
+
