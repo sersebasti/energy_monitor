@@ -879,6 +879,8 @@ def fetch_shelly_data():
         return None
 
 def store_data_in_db(emeters):
+    logger.debug(f"Emeters Shelly: {emeters}")
+    
     #Salva i dati di tutte le fasi in un'unica riga nel database MySQL.
     logger.info("Salvataggio dati Shelly nel DB...")
     #logger.debug(f"Dati Shelly: {emeters}")
@@ -903,14 +905,20 @@ def store_data_in_db(emeters):
                         %s, %s, %s, %s, %s, %s, 
                         %s, %s, %s, %s, %s, %s)
         """
-
+        
+        
+        
         # Prende i valori delle tre fasi (o mette 0 se non disponibili)
         values = []
         for i in range(3):
             emeter = emeters[i] if i < len(emeters) else {"power": 0, "pf": 0, "current": 0, "voltage": 0, "total": 0, "total_returned": 0}
             values.extend([emeter["power"], emeter["pf"], emeter["current"], emeter["voltage"], emeter["total"], emeter["total_returned"]])
-
+        
+        logger.debug(f"Query: {query}")
+        
         cursor.execute(query, tuple(values))
+        conn.commit()
+        
         logger.info("✅ Dati Shelly inseriti correttamente nel DB.")
     except Exception as e:
         logger.error(f"❌ Errore durante l'inserimento dei dati Shelly: {e}")
