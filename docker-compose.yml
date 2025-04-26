@@ -24,10 +24,10 @@ services:
     volumes:
       - ./logger:/app
     working_dir: /app
-    command: /app/entrypoint.sh
+    #command: /app/entrypoint.sh
     environment:
-      - TZ=Europe/Rome
-      - SHELLY_IP=192.168.1.9
+      #- TZ=Europe/Rome
+      - SHELLY_IP=192.168.1.4
       - MYSQL_HOST=shelly_mysql
       - MYSQL_USER=myuser
       - MYSQL_PASSWORD=mypassword
@@ -39,8 +39,8 @@ services:
       - "15000:5000"
     networks:
       - shelly_monitoring
-    extra_hosts:
-      - "shelly_device:192.168.11.208"  
+    #network_mode: host
+  
 
   shelly_grafana:
     image: grafana/grafana
@@ -95,7 +95,7 @@ services:
     networks:
       - shelly_monitoring
     extra_hosts:
-      - host.docker.internal:192.168.1.4   
+      - host.docker.internal:host-gateway   
     restart: always
     command: flask run --host=0.0.0.0 --port=5000 --reload
 

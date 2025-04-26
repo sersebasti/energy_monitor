@@ -9,6 +9,7 @@ import asyncssh # type: ignore
 import mysql.connector # type: ignore
 import aiohttp
 import time
+import socket
 
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
@@ -16,8 +17,10 @@ from flask import Flask, request, jsonify, Response
 from datetime import datetime
 from mysql.connector import Error # type: ignore
 from datetime import datetime, timedelta
-from flask_cors import CORS
-from flask_cors import cross_origin
+#from flask_cors import CORS # type: ignore
+#from flask_cors import cross_origin # type: ignore
+#from scapy.all import ARP, Ether, srp # type: ignore
+
 
 app = Flask(__name__)
 
@@ -38,6 +41,8 @@ TOKEN_URL = CONFIG["TOKEN_URL"]
 VIN = CONFIG["VIN"]
 MAX_ENERGY_PRELEVABILE = CONFIG["MAX_ENERGY_PRELEVABILE"]
 STATE = CONFIG["STATE"]
+SHELLY_MAC = CONFIG["SHELLY_MAC"]
+SHELLY_IP = CONFIG["SHELLY_IP"]
     
 # Verifica se la directory esiste, altrimenti la crea
 log_directory = "/app/logs"
@@ -56,7 +61,7 @@ handler = TimedRotatingFileHandler(
     os.path.join(log_directory, "tesla_proxy.log"),
     when="midnight",
     interval=1,
-    backupCount=30
+    backupCount=5
 )
 
 # Formato dei log
@@ -180,7 +185,7 @@ def handle_config():
 
 
 @app.route('/set_config', methods=['GET'])
-@cross_origin()
+#@cross_origin()
 def config_tesla_get():
     key = request.args.get('key')
     value = request.args.get('value')
@@ -468,6 +473,16 @@ def log_last_power_data():
 
 async def check_and_charge_tesla():
     
+    current_minute = datetime.now().minute
+    if current_minute not in [0, 15, 30, 45]:
+        logger.info(f"⏱ Minuto {current_minute}: esecuzione parziale.")
+        aggiorna_log_media_mobile(5)
+        verify_and_update_shelly_ip()
+        return
+    else:
+        logger.info(f"⏱ Minuto {current_minute}: esecuzione completa.")
+    
+    
     if STATE.upper() != "ON":
         logger.info("🚫 Stato = OFF. Ricarica disattivata. Nessun comando verrà inviato.")
         return
@@ -475,11 +490,27 @@ async def check_and_charge_tesla():
     
     esito, messaggio = await validate_execution(x_minuti_media_mobile=5)
     logger.info(f"Validazione: {messaggio}")
+    
     if not esito:
         logger.warning("⛔ Validazione fallita. Blocco dell’esecuzione.")
+        
+        # 👉 Aggiorna STATE = OFF e MAX_POWER_DRAW = -5000 nel config.json
+        try:
+            with open(config_path, "r") as f:
+                config = json.load(f)
+
+            config["STATE"] = "OFF"
+            config["MAX_ENERGY_PRELEVABILE"] = "-5000"  # stringa se coerente con il resto del file
+
+            with open(config_path, "w") as f:
+                json.dump(config, f, indent=2)
+
+            logger.info("🛑 Stato disattivato automaticamente: STATE = OFF, MAX_POWER_DRAW = -5000")
+        except Exception as e:
+            logger.error(f"❌ Errore aggiornando lo stato in config.json: {e}")
+        
         return
-  
-    
+
     differenza = get_last_logged_difference()
     if differenza is None:
         logger.warning("⚠️ Differenza non calcolabile dal DB, nessuna azione eseguita.")
@@ -633,6 +664,8 @@ async def ensure_vehicle_awake(max_attempts=3, delay=10):
                     except Exception as e:
                         logger.error(f"❌ Errore salvataggio nel DB: {e}")
 
+
+
                 # ✅ Criterio completo per cavo collegato
                 cavo_collegato = (
                     port_latch == "Engaged" and
@@ -648,6 +681,28 @@ async def ensure_vehicle_awake(max_attempts=3, delay=10):
                     if not cavo_collegato:
                         logger.warning("🔌 Cavo non collegato correttamente! Nessuna ricarica possibile.")
                         return None
+
+                    if battery_level == 100:
+                        logger.info("🔋 Batteria al 100%! Imposto STATE a OFF.")
+                        try:
+                            # Legge la configurazione attuale
+                            with open("config.json", "r") as f:
+                                config = json.load(f)
+
+                            # Modifica il parametro STATE
+                            config["STATE"] = "OFF"
+
+                            # Riscrive la configurazione
+                            with open("config.json", "w") as f:
+                                json.dump(config, f, indent=2)
+
+                            logger.info("✅ Configurazione aggiornata: STATE impostato a OFF.")
+                        except Exception as e:
+                            logger.error(f"❌ Errore aggiornando config.json: {e}")
+                        
+                        # NON mandare comandi se batteria è già carica
+                        logger.info("🔋 Batteria già carica al 100%! Nessun comando inviato.")
+                        return None    
 
                     return data
                 else:
@@ -805,9 +860,47 @@ def get_db_connection(dictionary=False):
         logger.error(f"❌ Errore connessione al DB: {e}")
         return None, None
 
+
+def is_shelly_ip(ip):
+    try:
+        response = requests.get(f"http://{ip}/status", timeout=1)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("mac", "").upper() == SHELLY_MAC
+    except requests.RequestException:
+        pass
+    return False
+    
+def find_shelly_ip():
+    for i in range(1, 255):
+        ip = f"192.168.1.{i}"
+        if is_shelly_ip(ip):
+            return ip
+    return None    
+    
+def verify_and_update_shelly_ip():
+    global SHELLY_IP
+
+    if not is_shelly_ip(SHELLY_IP):
+        new_ip = find_shelly_ip()
+        if new_ip:
+            CONFIG["SHELLY_IP"] = new_ip
+            SHELLY_IP = new_ip
+            # Salva la configurazione aggiornata
+            with open(config_path, "w") as f:
+                json.dump(CONFIG, f, indent=2)
+            logger.info(f"Dispositivo Shelly trovato all'indirizzo: {new_ip}")
+        else:
+            logger.error("Dispositivo Shelly non trovato sulla rete.")
+    else:
+        logger.info(f"Dispositivo Shelly già configurato all'indirizzo: {SHELLY_IP}")            
+    
         
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+    
+    
+    
 
 
 #if __name__ == "__main__":
