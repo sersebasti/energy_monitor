@@ -1,3 +1,3 @@
-/flask/logs/
-flask/logs/tesla_proxy.log
-flask/__pycache__/app.cpython-39.pyc
+flask/logs/
+flask/data/
+tesla-proxy-config/
