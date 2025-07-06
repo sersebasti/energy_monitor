@@ -18,7 +18,30 @@ services:
     networks:
       - shelly_monitoring
 
+  #shelly_logger:
+    #build: ./logger
+    #container_name: shelly_logger_local
+    #volumes:
+    #  - ./logger:/app
+    #working_dir: /app
+    #command: /app/entrypoint.sh
+    #environment:
+      #- TZ=Europe/Rome
+    #  - SHELLY_IP=192.168.1.4
+    #  - MYSQL_HOST=shelly_mysql
+    #  - MYSQL_USER=myuser
+    #  - MYSQL_PASSWORD=mypassword
+    #  - MYSQL_DATABASE=dati
+    #restart: always
+    #depends_on:
+    #  - shelly_mysql
+    #ports:
+    #  - "15000:5000"
+    #networks:
+    #  - shelly_monitoring
+    #network_mode: host
   
+
   shelly_grafana:
     image: grafana/grafana
     container_name: shelly_grafana_local
@@ -58,7 +81,6 @@ services:
       - "15001:5000"  # Espone il servizio sulla porta 5000
     volumes:
       - ./flask:/app  # Monta la directory locale nel contenitore
-      - ./tesla-proxy-config:/app/tesla-proxy-config
 
     environment:
       - TZ=Europe/Rome
@@ -79,24 +101,22 @@ services:
 
 
   tesla_http_proxy:
-     image: tesla/vehicle-command:latest
-     container_name: tesla_http_proxy
-     ports:
-       - "4443:4443"
-     environment:
-       - TESLA_HTTP_PROXY_TLS_CERT=/config/cert.pem
-       - TESLA_HTTP_PROXY_TLS_KEY=/config/key.pem
-       - TESLA_HTTP_PROXY_HOST=0.0.0.0
-       - TESLA_HTTP_PROXY_PORT=4443
-       - TESLA_HTTP_PROXY_TIMEOUT=10s
-       - TESLA_KEY_FILE=/config/private-key.pem
-       - TESLA_VERBOSE=true
-     volumes:
-       - ./tesla-proxy-config:/config
-       - ./tesla-proxy-home:/home/nonroot
-     restart: always
-     networks:
-       - shelly_monitoring  
+    image: tesla/vehicle-command:latest
+    ports:
+      - "4443:4443"
+    environment:
+      - TESLA_HTTP_PROXY_TLS_CERT=/config/cert.pem
+      - TESLA_HTTP_PROXY_TLS_KEY=/config/key.pem
+      - TESLA_HTTP_PROXY_HOST=0.0.0.0
+      - TESLA_HTTP_PROXY_PORT=4443
+      - TESLA_HTTP_PROXY_TIMEOUT=10s
+      - TESLA_KEY_FILE=/config/private-key.pem
+      - TESLA_VERBOSE=true
+    volumes:
+      - ./tesla-proxy-config:/config
+    restart: always
+    networks:
+      - shelly_monitoring  
        
   
 networks:
