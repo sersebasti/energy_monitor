@@ -1,6 +1,0 @@
-requests
-mysql-connector-python
-flask
-flask-mysql
-asyncssh
-scapy
