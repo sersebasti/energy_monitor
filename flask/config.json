@@ -4,9 +4,10 @@
   "REDIRECT_URI": "https://flask.sersebasti.com/callback",
   "TOKEN_URL": "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
   "VIN": "LRW3E7FA9MC345603",
-  "MAX_ENERGY_PRELEVABILE": "-5000",
-  "STATE": "OFF",
+  "MAX_ENERGY_PRELEVABILE": "0",
+  "STATE": "ON",
   "MAX_POWER_DRAW": "-5000",
   "SHELLY_IP": "192.168.1.6",
-  "SHELLY_MAC": "EC64C9C6BB08"
+  "SHELLY_MAC": "EC64C9C6BB08",
+  "OFFSTATE": "ON"
 }

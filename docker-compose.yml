@@ -26,6 +26,8 @@ services:
       - TZ=Europe/Rome
       - GF_INSTALL_PLUGINS=speakyourcode-button-panel
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=speakyourcode-button-panel
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=Merca10tello
     ports:
       - "13000:3000"
     volumes:
@@ -75,7 +77,9 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway   
     restart: always
-    command: flask run --host=0.0.0.0 --port=5000 --reload
+    #command: python app.py
+    #command: flask run --host=0.0.0.0 --port=5000 --reload
+    command: flask run --host=0.0.0.0 --port=5000
 
 
   tesla_http_proxy:
