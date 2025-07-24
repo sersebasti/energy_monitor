@@ -9,5 +9,7 @@
   "MAX_POWER_DRAW": "-5000",
   "SHELLY_IP": "192.168.1.6",
   "SHELLY_MAC": "EC64C9C6BB08",
+  "ESP8266_IP": "192.168.1.18",
+  "ESP8266_NAME": "tesla_esp",
   "OFFSTATE": "ON"
 }

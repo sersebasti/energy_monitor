@@ -46,6 +46,8 @@ MAX_ENERGY_PRELEVABILE = CONFIG["MAX_ENERGY_PRELEVABILE"]
 STATE = CONFIG["STATE"]
 SHELLY_MAC = CONFIG["SHELLY_MAC"]
 SHELLY_IP = CONFIG["SHELLY_IP"]
+ESP8266_IP = CONFIG["ESP8266_IP"]
+ESP8266_NAME = CONFIG["ESP8266_NAME"]
     
 # Verifica se la directory esiste, altrimenti la crea
 log_directory = "/app/logs"
@@ -1079,40 +1081,82 @@ def get_db_connection(dictionary=False):
 
 
 def is_shelly_ip(ip):
+    """Verifica se l'IP appartiene a un dispositivo Shelly (controlla il campo 'mac')."""
     try:
         response = requests.get(f"http://{ip}/status", timeout=1)
         if response.status_code == 200:
             data = response.json()
-            return data.get("mac", "").upper() == SHELLY_MAC
-    except requests.RequestException:
-        pass
+            mac = data.get("mac", "").upper()
+            if mac == SHELLY_MAC:
+                return True
+    except requests.RequestException as e:
+        logger.debug(f"[Shelly] Nessuna risposta valida da {ip}: {e}")
     return False
-    
+
 def find_shelly_ip():
     for i in range(1, 255):
         ip = f"192.168.1.{i}"
         if is_shelly_ip(ip):
             return ip
-    return None    
-    
+    return None
+
 def verify_and_update_shelly_ip():
     global SHELLY_IP
-
     if not is_shelly_ip(SHELLY_IP):
         new_ip = find_shelly_ip()
         if new_ip:
             CONFIG["SHELLY_IP"] = new_ip
             SHELLY_IP = new_ip
-            # Salva la configurazione aggiornata
             with open(config_path, "w") as f:
                 json.dump(CONFIG, f, indent=2)
-            logger.info(f"Dispositivo Shelly trovato all'indirizzo: {new_ip}")
+            logger.info(f"Shelly trovato all'indirizzo: {new_ip}")
         else:
             logger.error("Dispositivo Shelly non trovato sulla rete.")
     else:
-        logger.info(f"Dispositivo Shelly già configurato all'indirizzo: {SHELLY_IP}")            
-    
+        logger.info(f"Shelly già configurato all'indirizzo: {SHELLY_IP}")
+
+
+# ---- ESP8266 ----
+
+def is_esp8266_ip(ip):
+    """Verifica se l'IP appartiene al tuo ESP8266 personalizzato (campo 'name' == 'tesla_esp')."""
+    try:
+        response = requests.get(f"http://{ip}/status?token=Merca10tello", timeout=1)
+        if response.status_code == 200:
+            data = response.json()
+            name = data.get("name", "").lower()
+            if name == ESP8266_NAME.lower():
+                return True
+    except requests.RequestException as e:
+        logger.debug(f"[ESP] Nessuna risposta valida da {ip}: {e}")
+    return False
+
+ 
+
+def find_esp8266_ip():
+    for i in range(1, 255):
+        ip = f"192.168.1.{i}"
+        if is_esp8266_ip(ip):
+            return ip
+    return None
+
+def verify_and_update_esp8266_ip():
+    global ESP8266_IP
+    if not is_esp8266_ip(ESP8266_IP):
+        new_ip = find_esp8266_ip()
+        if new_ip:
+            CONFIG["ESP8266_IP"] = new_ip
+            ESP8266_IP = new_ip
+            with open(config_path, "w") as f:
+                json.dump(CONFIG, f, indent=2)
+            logger.info(f"ESP8266 trovato all'indirizzo: {new_ip}")
+        else:
+            logger.error("Dispositivo ESP8266 non trovato sulla rete.")
+    else:
+        logger.info(f"ESP8266 già configurato all'indirizzo: {ESP8266_IP}")
         
+        
+     
 
 def get_conf():
     conn, cursor = get_db_connection(dictionary=True)
@@ -1166,6 +1210,7 @@ async def shelly_logger():
         return
     
     verify_and_update_shelly_ip()
+    verify_and_update_esp8266_ip()
     
     tesla_charging_amps = None
     charging_state = None
