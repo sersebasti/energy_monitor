@@ -2,6 +2,7 @@ import os
 import io
 import json
 import ssl
+from unittest import result
 import requests
 import traceback
 import logging
@@ -840,6 +841,29 @@ async def check_vehicle_status(max_attempts=3, delay=10):
             }
 
 
+
+async def get_vehicle_data_new(access_token: str):
+
+    url = f"https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/vehicles/{VIN}/vehicle_data"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+        
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, headers=headers) as resp:
+                data = await resp.text()
+                logger.info(f"📡 Risposta HTTP: {resp.status}")
+                logger.debug(f"📥 Contenuto completo (raw):\n{data}")
+                return resp.status, data
+
+        except Exception as e:
+            logger.error(f"❌ Errore durante richiesta vehicle_data: {e}")
+            return None
+
+
 async def get_vehicle_data():
     token = get_access_token_from_file()
     if not token:
@@ -946,48 +970,6 @@ def insert_tesla_status(charging_amps: int, latitude: float = None, longitude: f
         cursor.close()
         conn.close()
 
-'''
-async def safety_check_tesla():
-    logger.info("🔁 Avvio controllo di sicurezza Tesla...")
-
-    differenza = get_last_db_energy_difference()
-    if differenza is None:
-        logger.warning("⚠️ Differenza non disponibile, controllo annullato.")
-        return
-
-    logger.info(f"📊 Differenza energetica più recente: {differenza:.2f} W")
-
-    max_fissa = 3000
-    soglia_minima = 5 * 220
-    energia_effettiva = differenza + max_fissa
-
-    logger.info(f"🔧 Energia effettiva simulata con MAX fisso ({max_fissa} W): {energia_effettiva:.2f} W")
-    logger.info(f"🔒 Soglia minima di sicurezza: {soglia_minima} W")
-
-    conn, cursor = get_db_connection()
-    if not conn:
-        logger.error("❌ Connessione al database fallita.")
-        return
-
-    try:
-        cursor.execute("SELECT charging_amps FROM tesla_status ORDER BY timestamp DESC LIMIT 1")
-        row = cursor.fetchone()
-        current_amps = row[0] if row else 0
-
-        logger.info(f"🔌 Corrente Tesla attuale: {current_amps} A")
-
-        if energia_effettiva < soglia_minima and current_amps > 0:
-            logger.warning("⚡ Energia insufficiente, invio comando STOP alla Tesla.")
-            await run_remote_command("charge_stop")
-        else:
-            logger.info("✅ Nessuna azione necessaria. Condizioni sicure.")
-    except mysql.connector.Error as e:
-        logger.error(f"❌ Errore MySQL durante il controllo di sicurezza: {e}")
-    finally:
-        cursor.close()
-        conn.close()
-'''
-
 
 def fetch_shelly_data():
    
@@ -1010,8 +992,28 @@ def fetch_shelly_data():
     except requests.RequestException as e:
         logger.error(f"Errore nella richiesta a Shelly: {e}")
 
-        
+        return None
 
+
+def fetch_esp8266_data():
+
+    url = f"http://{ESP8266_IP}/status?token=Merca10tello"
+    logger.info(f"Richiesta all'ESP8266: {url}")
+
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        logger.info(f"Risposta ESP8266: {response.status_code}")
+
+        if data.get("status") != "success":
+            logger.warning(f"⚠️ ESP8266 ha risposto ma con stato: {data.get('status')}")
+            return None
+
+        return data
+
+    except requests.RequestException as e:
+        logger.error(f"Errore nella richiesta all'ESP8266: {e}")
         return None
 
 def store_data_in_db(emeters):
@@ -1205,8 +1207,8 @@ def set_conf(key, value):
 async def shelly_logger():
     
 
-    if not SHELLY_IP:
-        logger.error("❌ Indirizzo IP di Shelly non configurato. Impossibile avviare il logger.")
+    if not SHELLY_IP or not ESP8266_IP:
+        logger.error("❌ Indirizzi IP di Shelly o ESP8266 non configurati. Verifica il file di configurazione.")
         return
     
     verify_and_update_shelly_ip()
@@ -1217,13 +1219,24 @@ async def shelly_logger():
     first_loop = True
 
     while True:
-        
-            emitters = fetch_shelly_data()
-            if emitters:
-                store_data_in_db(emitters)
+            
+            data = fetch_esp8266_data()
+            if data:
+                tesla_amps = data.get("irms_A")
+                tesla_amps_int = int(tesla_amps) if tesla_amps >= 6 else 0
+                logger.info(f"⚡ Corrente letta da ESP8266: {tesla_amps:.3f} A" )
+                logger.info(f"⚡ Corrente letta da ESP8266 (intero): {tesla_amps_int} A")
+                insert_tesla_status(tesla_amps_int)
+            else:
+                logger.warning("📡 Nessun dato ricevuto dall'ESP8266.")
+                
+            
+            shelly_data = fetch_shelly_data()
+            if shelly_data:
+                store_data_in_db(shelly_data)
                 logger.info("✅ Dati Shelly salvati correttamente.")
                 
-                enel_power_value = float(emitters[1]['power'])
+                enel_power_value = float(shelly_data[1]['power'])
                 logger.info(f"⚡ Potenza prelevata da Enel: {enel_power_value} W")
 
 
@@ -1344,14 +1357,144 @@ async def shelly_logger():
 
                                 
 
-                       
+async def shelly_logger_new():
+    if not SHELLY_IP or not ESP8266_IP:
+        logger.error("❌ Indirizzi IP di Shelly o ESP8266 non configurati. Verifica il file di configurazione.")
+        return
+
+    verify_and_update_shelly_ip()
+    verify_and_update_esp8266_ip()
+
+    period = 30  # secondi tra i cicli di polling
+
+    while True:
+        esp8266_data = fetch_esp8266_data()
+        if esp8266_data:
+            tesla_amps = esp8266_data.get("irms_A")
+            tesla_amps_int = round(tesla_amps) if tesla_amps > 5.5 else 0
+            logger.info(f"⚡ Corrente letta da ESP8266: {tesla_amps:.3f} A")
+            logger.info(f"⚡ Corrente letta da ESP8266 (intero): {tesla_amps_int} A")
+            insert_tesla_status(tesla_amps_int)
+        else:
+            logger.warning("📡 Nessun dato ricevuto dall'ESP8266.")
+
+        shelly_data = fetch_shelly_data()
+        shelly_data_processed = process_shelly_phases(shelly_data)
+
+        grid_voltage = shelly_data_processed["grid_voltage"]
+
+        conf = get_conf()
+        STATE = conf["STATE"]
+        MAX_ENERGY_PRELEVABILE = float(conf["MAX_ENERGY_PRELEVABILE"])
+
+        logger.info(f"⚙️ Stato configurazione: {STATE}")
+        logger.info(f"⚡ Max energia prelevabile: {MAX_ENERGY_PRELEVABILE} W")
+
+        if shelly_data and esp8266_data:
+            logger.info("✅ Dati Shelly e ESP8266 acquisiti.")
+            store_data_in_db(shelly_data)
+            insert_tesla_status(tesla_amps_int)
+            logger.info("✅ Dati Shelly e ESP8266 salvati correttamente.")
+        else:
+            logger.warning(f"⚠️ Dati Shelly o ESP8266 non disponibili. Riprovo tra {period} secondi...")
+            await asyncio.sleep(period)
+            continue
+
+        if STATE == "ON":
+            tesla_power_draw = tesla_amps_int * grid_voltage
+            grid_power = shelly_data_processed["grid_power"]
+
+            logger.info(f"⚡ Potenza prelevata da Enel: {grid_power} W")
+            logger.info(f"⚡ Potenza assorbita da Tesla: {tesla_power_draw} W")
+
+            max_allowed_amps = 0
+            for amps in range(13, 5, -1):
+                total_power = amps * grid_voltage + grid_power
+                if total_power < MAX_ENERGY_PRELEVABILE:
+                    max_allowed_amps = amps
+                    break
+
+            logger.info(f"🔧 Max corrente consentita: {max_allowed_amps} A")
+
+            if max_allowed_amps == tesla_amps_int:
+                logger.info(f"✅ Corrente Tesla già impostata a {tesla_amps_int} A. Nessuna azione necessaria.")
+            elif max_allowed_amps == 0:
+                logger.warning(f"⚠️ Nessuna corrente impostabile trovata che rispetti il limite di {MAX_ENERGY_PRELEVABILE} W.")
+                logger.info("🔴 Invio comando charge_stop.")
+                result_charge_stop = await run_tesla_command("charge_stop")
+
+                if result_charge_stop.get("status") == "error":
+                    logger.error("❌ Errore inviando il comando charge_stop.")
+                    set_conf("STATE", "OFF")
+                    logger.error("🛑 Sistema disattivato: STATE = OFF")
+                else:
+                    logger.info("✅ Comando charge_stop inviato con successo.")
+            else:
+                if tesla_amps_int == 0:
+                    logger.info(f"🔌 Corrente Tesla attuale = 0 A. Corrente da impostare: {max_allowed_amps} A")
+                    logger.info("🔴 Invio comando charge_start.")
+                    result_charge_start = await run_tesla_command("charge_start")
+
+                    if result_charge_start.get("status") == "error":
+                        logger.error("❌ Errore inviando il comando charge_start.")
+                        set_conf("STATE", "OFF")
+                        logger.error("🛑 Sistema disattivato: STATE = OFF")
+                    else:
+                        logger.info("✅ Comando charge_start inviato con successo.")
+                else:
+                    logger.info(f"🔌 Corrente Tesla attuale = {tesla_amps_int} A. Corrente da impostare: {max_allowed_amps} A")
+                    logger.info("🔴 Invio comando set_charging_amps.")
+                    result_set_charging_amps = await run_tesla_command("set_charging_amps", max_allowed_amps)
+
+                    if result_set_charging_amps.get("status") == "error":
+                        logger.error(f"❌ Errore inviando il comando set_charging_amps {max_allowed_amps} A.")
+                        set_conf("STATE", "OFF")
+                        logger.error("🛑 Sistema disattivato: STATE = OFF")
+                    else:
+                        logger.info(f"✅ Comando set_charging_amps {max_allowed_amps} A inviato con successo.")
+        else:
+            logger.info("🚫 Stato = OFF. Sistema gestione ricarica disattivato. Nessun comando verrà inviato.")
+
+        await asyncio.sleep(period)                     
 
             
         
+def process_shelly_phases(data):
+    if len(data) < 2:
+        raise ValueError("Incomplete data: at least phase 1 (PV) and phase 2 (grid) are required.")
 
+    pv_power = data[0]['power']           # Solar production (usually >= 0)
+    grid_power = data[1]['power']         # Positive = importing, Negative = exporting
+
+    house_consumption = pv_power + grid_power  # Real house consumption
+
+    return {
+        'solar_production': pv_power,
+        'grid_power': grid_power,
+        'house_consumption': house_consumption,
+        'pv_current': data[0]['current'],
+        'grid_current': data[1]['current'],
+        'pv_voltage': data[0]['voltage'],
+        'grid_voltage': data[1]['voltage'],
+        'measurements_valid': data[0]['is_valid'] and data[1]['is_valid']
+    }
+
+
+
+
+async def get_charge_state(session, headers, ssl_ctx):
+    charge_state_url = f"https://tesla_http_proxy:4443/api/1/vehicles/{VIN}/data_request/charge_state"
+    async with session.get(charge_state_url, headers=headers, ssl=ssl_ctx) as resp:
+        if resp.status != 200:
+            logger.warning(f"⚠️ Impossibile ottenere lo stato di carica: HTTP {resp.status}")
+            return None
+        return await resp.json()
 
 
 async def run_tesla_command(command, charging_amps_value=None, retried=False):
+    
+
+    
     TESLA_TOKEN_FILE = "/app/data/tesla_token_latest.json"
     CERT_PATH = "/app/tesla-proxy-config/cert.pem"
     PROXY_URL_BASE = "https://tesla_http_proxy:4443/api/1/vehicles"
@@ -1376,46 +1519,94 @@ async def run_tesla_command(command, charging_amps_value=None, retried=False):
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
+    
+    if command != "wake_up":
 
+        vehicle_data = await get_vehicle_data_new(access_token)
+        
+        # Example response tuple
+        status, data = vehicle_data
+
+        data_str = json.dumps(data).lower()
+
+        # 🔐 Token non valido o scaduto
+        if ("token expired" in data_str or "invalid bearer token" in data_str) and status != 200:
+            if not retried:
+                logger.info("✅ Token non valido o scaduto - faccio refresh_token.")
+                if refresh_token():
+                    logger.info("✅ Token rigenerato - ritento il comando.")
+                    return await run_tesla_command(command, charging_amps_value, retried=True)
+                else:
+                    logger.error("❌ Impossibile aggiornare il token.")
+                    return {"status": "error", "message": "Impossibile aggiornare il token."}
+            else:
+                logger.info(f"📡 Risposta HTTP: {status}")
+                logger.debug(f"📥 Contenuto completo (raw):\n{data}")
+                logger.error("❌ Token non valido anche dopo refresh.")
+                return {"status": "error", "message": "Token non valido anche dopo il refresh"}
+
+        # 🚗 Veicolo offline o addormentato
+        elif "vehicle unavailable" in data_str and status != 200:
+                logger.warning("❌ Veicolo non disponibile: " + data_str)
+                logger.info("🚨 Invio comando 'wake_up' per risvegliare il veicolo…")
+                return await run_tesla_command("wake_up")
+        
+        elif status != 200:
+            logger.error(f"❌ Errore durante la richiesta get_vehicle_data {status}")
+            return {"status": "error", "message": f"Errore durante la richiesta get_vehicle_data {status}"}
+        
+        else:
+            logger.info(f"📡 Risposta HTTP: {status}")
+            logger.info(f"📥 Contenuto completo (raw):\n{data}")
+
+            # ✅ Parsiamo la stringa JSON prima di accedere
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ JSON non valido: {e}")
+                return {"status": "error", "message": "Risposta non valida"}
+
+            vehicle = data.get("response", {})
+            charge = vehicle.get("charge_state", {})
+
+            if charge.get('charge_port_door_open') and charge.get('charge_port_latch') == "Engaged":
+                logger.info("🔌 Lo sportello di ricarica è aperto e il connettore è bloccato.")
+                if charge.get('charging_state') == "Stopped" and retried == False:
+                    logger.info("🔋 La ricarica è interrotta. Avvio la ricarica...")
+                    return await run_tesla_command("charge_start", retried=True)
+                elif charge.get('charging_state') == "Stopped" and retried == True:
+                    logger.info("Non è possibile avviare la ricarica con il connettore agganciato.")
+                    return {"status": "error", "message": "Non è possibile avviare la ricarica con il connettore agganciato."}
+                elif charge.get('charging_state') == "Charging":
+                    logger.info("🔋 La ricarica è già in corso.")
+                else:
+                    logger.info("ℹ️ Il connettore è agganciato e lo sportello è aperto, ma la ricarica non è in corso.")
+                    return {"status": "error", "message": "Il connettore è agganciato e lo sportello è aperto, ma la ricarica non è in corso."}        
+            else:
+                logger.info("ℹ️ Il connettore non è agganciato o lo sportello è chiuso.")
+                return {"status": "error", "message": "Lo sportello di ricarica non è aperto o il connettore non è agganciato."}
+     
+    
+    logger.info("Eseguo commando Tesla: " + command)
+            
     ssl_ctx = ssl.create_default_context(cafile=CERT_PATH)
-
     logger.info(f"🚀 Invio comando {command} al proxy…")
 
     async with aiohttp.ClientSession() as session:
+        
         try:
-            async with session.post(url, headers=headers, json=payload, ssl=ssl_ctx) as resp:
+            async with session.post(url, headers=headers, json=payload, ssl=ssl_ctx) as resp:      
+                status = resp.status
                 text = await resp.text()
-                logger.debug(f"📥 Risposta grezza: {text}")
-                try:
-                    output = json.loads(text)
-                except json.JSONDecodeError:
-                    output = text
+                data_resp = json.loads(text)
 
-                result = {
-                    "status": "success" if resp.status == 200 else "error",
-                    "command_sent": command,
-                    "value": charging_amps_value,
-                    "output": output,
-                    "code": resp.status
-                }
-
-                if resp.status == 401:
-                    if retried:
-                        logger.error("❌ Errore con token.")
-                        result["message"] = "Errore con token"
-                        return result
-
-                    logger.warning("🔄 Provo a aggiornare il token")
-                    from app import refresh_token
-                    if refresh_token():
-                        logger.info("✅ Token aggiornato, ritento il comando.")
-                        return await run_tesla_command(command, charging_amps_value, retried=True)
-                    else:
-                        logger.error("❌ Impossibile aggiornare il token.")
-                        result["message"] = "TErrore con token e refresh fallito"
-                        return result
-
-                return result
+                if status == 200:
+                    logger.info(f"✅ Comando {command} eseguito con successo.")
+                    logger.debug(f"📦 Risposta JSON: {json.dumps(data_resp, indent=2)}")
+                    return {"status": "success", "data": data_resp}
+                else:
+                    logger.error(f"❌ Errore durante la richiesta al proxy: {status} - {text}")
+                    return {"status": "error", "message": f"Errore durante la richiesta al proxy: {status} - {text}"}
 
         except Exception as e:
             logger.error(f"❌ Errore durante la richiesta al proxy: {e}")

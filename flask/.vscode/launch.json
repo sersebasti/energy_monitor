@@ -11,6 +11,13 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger: shelly_logger",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "shelly_logger.py",
+            "console": "integratedTerminal"
         }
     ]
 }
