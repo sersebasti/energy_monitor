@@ -1352,7 +1352,7 @@ async def shelly_logger():
                 if tesla_amps_int == 0:
                     logger.info(f"🔌 Corrente Tesla attuale = 0 A. Corrente da impostare: {max_allowed_amps} A")
                     logger.info("🔴 Invio comando charge_start.")
-                    result_charge_start = await run_tesla_command("charge_start")
+                    result_charge_start = await run_tesla_command("charge_start", retried=False)
                     if result_charge_start.get("status") == "error":
                         logger.error("❌ Errore inviando il comando charge_start.")
                         set_conf("STATE", "OFF")
@@ -1406,6 +1406,9 @@ def process_shelly_phases(data):
 
 
 async def run_tesla_command(command, charging_amps_value=None, retried=False):
+
+    logger.info(f"🔧 Esecuzione comando Tesla: {command} (charging_amps_value={charging_amps_value}, retried={retried})"    
+                )
     TESLA_TOKEN_FILE = "/app/data/tesla_token_latest.json"
     CERT_PATH = "/app/tesla-proxy-config/cert.pem"
     PROXY_URL_BASE = "https://tesla_http_proxy:4443/api/1/vehicles"
