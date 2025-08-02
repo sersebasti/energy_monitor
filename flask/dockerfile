@@ -1,24 +1,29 @@
 # Usa l'immagine base di Python
 FROM python:3.9-slim
 
+# Installa procps per comandi come ps, top, pkill
+RUN apt update && apt install -y procps git
+
+
 # Imposta la directory di lavoro nel contenitore
 WORKDIR /app
 
-# Copia i file dell'app nel contenitore
-COPY app.py /app
-COPY requirements.txt /app
+# Copia tutto il contenuto della directory nel container
+COPY . /app
 
-# Crea le directory per i log e i dati 
-RUN mkdir -p /app/data && mkdir -p /app/logs
+# Imposta permessi e crea cartelle necessarie
+RUN chmod +x /app/start.sh && \
+    mkdir -p /app/data /app/logs && \
+    chmod -R 777 /app
 
-# Imposta i permessi
-RUN chmod -R 777 /app
-
-# Installa le dipendenze
-RUN pip install --no-cache-dir -r requirements.txt
+# Installa le dipendenze Python
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Espone la porta 5000
 EXPOSE 5000
 
-# Comando per avviare l'app Flask
+# Comando di avvio
+CMD ["./start.sh"]
+
+# Comando alternativo per avviare Flask direttamente
 # CMD ["python", "app.py"]

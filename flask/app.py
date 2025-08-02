@@ -1550,3 +1550,39 @@ def log_dict_pretty(d, prefix="", level=0):
             log_dict_pretty(item, "", level + 1)
     else:
         logger.info(f"{indent}🔹 {prefix}{d}")
+
+VOLTAGE_IP = "192.168.1.2"
+VOLTAGE_URL = f"http://{VOLTAGE_IP}/voltage"
+
+async def voltage_logger_loop():
+    async with aiohttp.ClientSession() as session:
+        while True:
+            try:
+                async with session.get(VOLTAGE_URL, timeout=5) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        voltage = data.get("voltage")
+                        name = data.get("name", "sconosciuto")
+
+                        print(f"🔌 Tensione da {name}: {voltage:.2f} V")
+
+                        # Inserimento nel database
+                        conn, cursor = get_db_connection()
+                        if conn and cursor:
+                            try:
+                                cursor.execute(
+                                    "INSERT INTO litum_battery (voltage, sent_by) VALUES (%s, %s)",
+                                    (voltage, name)
+                                )
+                                conn.commit()
+                            except Exception as db_err:
+                                print(f"❌ Errore durante INSERT: {db_err}")
+                            finally:
+                                cursor.close()
+                                conn.close()
+                    else:
+                        print(f"⚠️ Risposta HTTP non OK: {resp.status}")
+            except Exception as e:
+                print(f"❌ Errore richiesta: {e}")
+
+            await asyncio.sleep(30)
