@@ -760,7 +760,7 @@ async def get_vehicle_data(access_token: str):
         try:
             async with session.get(url, headers=headers) as resp:
                 data = await resp.text()
-                logger.info(f"📡 Risposta HTTP: {resp.status}")
+                logger.info(f"📡 Risposta get_vehicle_data HTTP: {resp.status}")
                 logger.debug(f"📥 Contenuto completo (raw):\n{data}")
                 return resp.status, data
 
@@ -919,7 +919,7 @@ def default_shelly_data():
 
 def fetch_esp8266_data():
 
-    url = f"http://{ESP8266_IP}/status?token=Merca10tello"
+    url = f"http://{ESP8266_IP}/status"
     logger.info(f"Richiesta all'ESP8266: {url}")
 
     try:
@@ -928,7 +928,7 @@ def fetch_esp8266_data():
         data = response.json()
         logger.info(f"Risposta ESP8266: {response.status_code}")
 
-        if data.get("status") != "success":
+        if data.get("status") != "ok":
             logger.warning(f"⚠️ ESP8266 ha risposto ma con stato: {data.get('status')}")
             return None
 
@@ -1486,19 +1486,18 @@ async def run_tesla_command(command, charging_amps_value=None, retried=False):
         charge = vehicle.get("charge_state", {})
 
         # 🧲 Controllo stato ricarica
+
         if charge.get('charge_port_door_open') and charge.get('charge_port_latch') == "Engaged":
             logger.info("🔌 Sportello ricarica aperto e connettore agganciato.")
 
             if charge.get('charging_state') == "Stopped":
-                if not retried:
-                    logger.info("🔋 Ricarica interrotta. Avvio nuovo tentativo…")
-                    return await run_tesla_command("charge_start", retried=True)
-                else:
-                    logger.warning("⚠️ Ricarica ancora interrotta dopo retry.")
-                    return {"status": "error", "message": "Impossibile avviare ricarica con connettore già agganciato"}
+                
+                logger.info("🔋 Ricarica interrotta con connettore agganciato. Provo a dare comando charge_start")
+                command = "charge_start"
 
             elif charge.get('charging_state') == "Charging":
-                logger.info("✅ Ricarica già in corso.")
+                logger.info("✅ Ricarica in corso.")
+                
             else:
                 logger.info("ℹ️ Connettore agganciato ma ricarica non in corso.")
                 return {"status": "error", "message": "Ricarica non attiva con connettore agganciato"}
