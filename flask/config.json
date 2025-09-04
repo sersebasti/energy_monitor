@@ -11,5 +11,7 @@
   "SHELLY_MAC": "EC64C9C6BB08",
   "ESP8266_IP": "192.168.1.4",
   "ESP8266_NAME": "tesla_esp",
-  "OFFSTATE": "ON"
+  "OFFSTATE": "ON",
+  "ESP32_IP_1": "192.168.1.10",
+  "ESP32_MAC_1": "68:25:dd:22:12:d8"
 }
